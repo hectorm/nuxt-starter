@@ -27,7 +27,7 @@ RUN --mount=type=cache,id=pnpm,dst=/pnpm/store/ \
 ## "main" stage
 ##################################################
 
-FROM gcr.io/distroless/cc-debian12:nonroot@sha256:b9452f5cd004c1610d4056be70343a8a7ea3d46bcf0fda3ce90f1ed90e70989c AS main
+FROM gcr.io/distroless/cc-debian12:nonroot@sha256:eeb716b8a36ecf37992cb8f1e716a4b5737c086fd3bcbb08b5c9588ad5c8a701 AS main
 
 COPY --from=build --chown=0:0 /usr/local/bin/node /node
 COPY --from=build --chown=0:0 /src/.output/ /app/
