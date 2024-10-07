@@ -66,18 +66,18 @@
     "zod": "~3.23.8"
   },
   "devDependencies": {
-    "@ianvs/prettier-plugin-sort-imports": "~4.2.1",
-    "@nuxt/eslint": "0.3.13",
+    "@ianvs/prettier-plugin-sort-imports": "~4.3.1",
+    "@nuxt/eslint": "0.5.7",
     "@types/jmespath": "~0.15.2",
     "@types/node": "~20.13.0",
-    "@unocss/eslint-config": "~0.60.4",
-    "eslint": "~9.4.0",
+    "@unocss/eslint-config": "~0.63.3",
+    "eslint": "~9.12.0",
     "eslint-config-prettier": "~9.1.0",
-    "globals": "~15.3.0",
-    "npm-run-all2": "~6.2.0",
-    "prettier": "~3.3.0",
-    "sass": "~1.77.4",
-    "typescript": "~5.4.5",
-    "vue-tsc": "~2.0.19"
+    "globals": "~15.10.0",
+    "npm-run-all2": "~6.2.3",
+    "prettier": "~3.3.3",
+    "sass": "~1.79.4",
+    "typescript": "~5.6.2",
+    "vue-tsc": "~2.1.6"
   }
 }
