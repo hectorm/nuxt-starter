@@ -90,11 +90,11 @@ importers:
         specifier: ~11.1.0
         version: 11.1.0
       primevue:
-        specifier: ~3.52.0
-        version: 3.52.0(vue@3.4.27(typescript@5.4.5))
+        specifier: ~4.1.0
+        version: 4.1.0(vue@3.4.27(typescript@5.4.5))
       primevue-sass-theme:
         specifier: github:primefaces/primevue-sass-theme#3.52.0
-        version: https://codeload.github.com/primefaces/primevue-sass-theme/tar.gz/13ce6f51aacc94d443d796cd3c96e04013e37a9a
+        version: git+https://git@github.com:primefaces/primevue-sass-theme.git#13ce6f51aacc94d443d796cd3c96e04013e37a9a
       prisma:
         specifier: ~5.14.0
         version: 5.14.0
@@ -1312,6 +1312,24 @@ packages:
   '@polka/url@1.0.0-next.25':
     resolution: {integrity: sha512-j7P6Rgr3mmtdkeDGTe0E/aYyWEWVtc5yFXtHCRHs28/jptDEWfaVOc5T7cblqy1XKPPfCxJc/8DwQ5YgLOZOVQ==}
 
+  '@primeuix/styled@0.2.0':
+    resolution: {integrity: sha512-3Q6bDrmwTW88tzJsFIFenC0VyXLj0+/wYw+TZnJ/4CCDfehR4WfTs4EZdpuFtYqvmbpJ6zWXAiwSCNdSYTZkyA==}
+    engines: {node: '>=12.11.0'}
+
+  '@primeuix/utils@0.2.0':
+    resolution: {integrity: sha512-AaDIeRFlsbkVTk2s0mlEjnGSLi31X669NVwo+n+AVAnBdDiQznjipNTpHbOobVBtjOKZize74PChK6uoaSBRUw==}
+    engines: {node: '>=12.11.0'}
+
+  '@primevue/core@4.1.0':
+    resolution: {integrity: sha512-YulYm+PtoYSyLv/pNl3oyjvN+C9Ba/RSpW3bZAVkMRz9SWSA6lj2QaN+/9uxhokWZPL63zCHsHzIBV5YMvZshQ==}
+    engines: {node: '>=12.11.0'}
+    peerDependencies:
+      vue: ^3.0.0
+
+  '@primevue/icons@4.1.0':
+    resolution: {integrity: sha512-npY8Jy3HX1+Qbv1jCRdAevOcOj355b0x1Wmepa7omhgQFIUVs2o18HGohYml4HJpmEAu6aKnUIhhodFMuglMeQ==}
+    engines: {node: '>=12.11.0'}
+
   '@prisma/client@5.14.0':
     resolution: {integrity: sha512-akMSuyvLKeoU4LeyBAUdThP/uhVP3GuLygFE3MlYzaCb3/J8SfsYBE5PkaFuLuVpLyA6sFoW+16z/aPhNAESqg==}
     engines: {node: '>=16.13'}
@@ -1625,9 +1643,6 @@ packages:
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
-
-  '@types/node@20.12.14':
-    resolution: {integrity: sha512-scnD59RpYD91xngrQQLGkE+6UrHUPzeKZWhhjBSa3HSkwjbQc38+q3RoIVEwxQGRw3M+j5hpNAM+lgV3cVormg==}
 
   '@types/node@20.13.0':
     resolution: {integrity: sha512-FM6AOb3khNkNIXPnHFDYaHerSv8uN22C91z098AnGccVu+Pcdhi+pNUFDi0iLmPIsVE0JBD0KVS7mzUYt4nRzQ==}
@@ -4241,14 +4256,13 @@ packages:
     resolution: {integrity: sha512-mQUvGU6aUFQ+rNvTIAcZuWGRT9a6f6Yrg9bHs4ImKF+HZCEK+plBvnAZYSIQztknZF2qnzNtr6F8s0+IuptdlQ==}
     engines: {node: ^14.13.1 || >=16.0.0}
 
-  primevue-sass-theme@https://codeload.github.com/primefaces/primevue-sass-theme/tar.gz/13ce6f51aacc94d443d796cd3c96e04013e37a9a:
-    resolution: {tarball: https://codeload.github.com/primefaces/primevue-sass-theme/tar.gz/13ce6f51aacc94d443d796cd3c96e04013e37a9a}
+  primevue-sass-theme@git+https://git@github.com:primefaces/primevue-sass-theme.git#13ce6f51aacc94d443d796cd3c96e04013e37a9a:
+    resolution: {commit: 13ce6f51aacc94d443d796cd3c96e04013e37a9a, repo: git@github.com:primefaces/primevue-sass-theme.git, type: git}
     version: 3.52.0
 
-  primevue@3.52.0:
-    resolution: {integrity: sha512-HLOVP5YI0ArFKUhIyfZsWmTNMaBYNCBWC/3DYvdd/Po4LY5/WXf7yIYvArE2q/3OuwSXJXvjlR8UNQeJYRSQog==}
-    peerDependencies:
-      vue: ^3.0.0
+  primevue@4.1.0:
+    resolution: {integrity: sha512-iR/RysaTnZeIG3UVxdhazU7MA8nEODOpHk8WSINwYU0WMsA/ZghbchHOD5a/LYuLuZa3V03j7mX4LMKroeV+ag==}
+    engines: {node: '>=12.11.0'}
 
   prisma@5.14.0:
     resolution: {integrity: sha512-gCNZco7y5XtjrnQYeDJTiVZmT/ncqCr5RY1/Cf8X2wgLRmyh9ayPAGBNziI4qEE4S6SxCH5omQLVo9lmURaJ/Q==}
@@ -6628,6 +6642,25 @@ snapshots:
 
   '@polka/url@1.0.0-next.25': {}
 
+  '@primeuix/styled@0.2.0':
+    dependencies:
+      '@primeuix/utils': 0.2.0
+
+  '@primeuix/utils@0.2.0': {}
+
+  '@primevue/core@4.1.0(vue@3.4.27(typescript@5.4.5))':
+    dependencies:
+      '@primeuix/styled': 0.2.0
+      '@primeuix/utils': 0.2.0
+      vue: 3.4.27(typescript@5.4.5)
+
+  '@primevue/icons@4.1.0(vue@3.4.27(typescript@5.4.5))':
+    dependencies:
+      '@primeuix/utils': 0.2.0
+      '@primevue/core': 4.1.0(vue@3.4.27(typescript@5.4.5))
+    transitivePeerDependencies:
+      - vue
+
   '@prisma/client@5.14.0(prisma@5.14.0)':
     optionalDependencies:
       prisma: 5.14.0
@@ -6937,10 +6970,6 @@ snapshots:
   '@types/jmespath@0.15.2': {}
 
   '@types/json-schema@7.0.15': {}
-
-  '@types/node@20.12.14':
-    dependencies:
-      undici-types: 5.26.5
 
   '@types/node@20.13.0':
     dependencies:
@@ -9020,7 +9049,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 20.12.14
+      '@types/node': 20.13.0
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -10107,11 +10136,16 @@ snapshots:
 
   pretty-bytes@6.1.1: {}
 
-  primevue-sass-theme@https://codeload.github.com/primefaces/primevue-sass-theme/tar.gz/13ce6f51aacc94d443d796cd3c96e04013e37a9a: {}
+  primevue-sass-theme@git+https://git@github.com:primefaces/primevue-sass-theme.git#13ce6f51aacc94d443d796cd3c96e04013e37a9a: {}
 
-  primevue@3.52.0(vue@3.4.27(typescript@5.4.5)):
+  primevue@4.1.0(vue@3.4.27(typescript@5.4.5)):
     dependencies:
-      vue: 3.4.27(typescript@5.4.5)
+      '@primeuix/styled': 0.2.0
+      '@primeuix/utils': 0.2.0
+      '@primevue/core': 4.1.0(vue@3.4.27(typescript@5.4.5))
+      '@primevue/icons': 4.1.0(vue@3.4.27(typescript@5.4.5))
+    transitivePeerDependencies:
+      - vue
 
   prisma@5.14.0:
     dependencies:
