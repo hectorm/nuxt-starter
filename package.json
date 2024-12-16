@@ -53,7 +53,7 @@
     "pinia": "~2.1.7",
     "pino": "~9.1.0",
     "pino-pretty": "~11.1.0",
-    "primevue": "~3.52.0",
+    "primevue": "~4.2.5",
     "primevue-sass-theme": "github:primefaces/primevue-sass-theme#3.52.0",
     "prisma": "~5.14.0",
     "superjson": "~2.2.1",
