@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "bradlc.vscode-tailwindcss",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "prisma.prisma",
+    "redhat.vscode-yaml",
+    "vue.volar",
+    "zenstack.zenstack"
+  ]
+}

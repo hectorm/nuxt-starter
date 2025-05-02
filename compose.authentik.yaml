@@ -1,0 +1,431 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
+name: "app"
+
+# https://hub.docker.com/_/traefik
+x-traefik-image: &traefik-image "docker.io/traefik:3.3"
+# https://github.com/goauthentik/authentik/pkgs/container/server
+x-authentik-image: &authentik-image "ghcr.io/goauthentik/server:2025.4"
+# https://hub.docker.com/_/postgres
+x-postgres-image: &postgres-image "docker.io/postgres:17-bookworm"
+# https://hub.docker.com/r/valkey/valkey
+x-valkey-image: &valkey-image "docker.io/valkey/valkey:8-bookworm"
+
+services:
+  traefik:
+    image: *traefik-image
+    container_name: "app-traefik"
+    hostname: "traefik"
+    restart: "always"
+    networks:
+      - "public"
+      - "private"
+    ports:
+      - "80:80/tcp"
+      - "443:443/tcp"
+      - "443:443/udp"
+      - "127.0.0.1:5432:5432/tcp"
+      - "127.0.0.1:6379:6379/tcp"
+      - "127.0.0.1:8080:8080/tcp"
+    volumes:
+      - { type: "bind", source: "/var/run/docker.sock", target: "/var/run/docker.sock", read_only: true }
+      - { type: "tmpfs", target: "/run/" }
+      - { type: "tmpfs", target: "/tmp/", tmpfs: { mode: 0o1777 } }
+    command:
+      - "--api.insecure=true"
+      - "--api.dashboard=true"
+      - "--api.disableDashboardAd=true"
+      - "--global.checkNewVersion=false"
+      - "--global.sendAnonymousUsage=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedByDefault=false"
+      - "--entrypoints.web.address=:80/tcp"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.address=:443/tcp"
+      - "--entrypoints.websecure.http3.advertisedPort=443"
+      - "--entrypoints.postgres.address=:5432/tcp"
+      - "--entrypoints.valkey.address=:6379/tcp"
+      - "--ping=true"
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      start_period: "60s"
+      start_interval: "5s"
+      interval: "10s"
+      timeout: "10s"
+      retries: 2
+
+  app:
+    profiles: ["production"]
+    image: "localhost/app:latest"
+    build: { context: "./", dockerfile: "${COMPOSE_DOCKERFILE:-./Dockerfile}" }
+    container_name: "app"
+    hostname: "app"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.app.rule: "Host(`app.localhost`)"
+      traefik.http.routers.app.entryPoints: "websecure"
+      traefik.http.routers.app.tls: "true"
+      traefik.http.routers.app.service: "app@docker"
+      traefik.http.routers.app.middlewares: "compress@docker"
+      traefik.http.services.app.loadBalancer.server.port: "3000"
+      traefik.http.middlewares.compress.compress.includedContentTypes: "application/json,application/wasm,application/xml,image/svg+xml,text/css,text/html,text/javascript,text/plain"
+    restart: "always"
+    networks:
+      - "private"
+    read_only: true
+    volumes:
+      - { type: "tmpfs", target: "/run/" }
+      - { type: "tmpfs", target: "/tmp/", tmpfs: { mode: 0o1777 } }
+    environment:
+      PRISMA_DATABASE_URL: "postgresql://app:password@postgres:5432/app"
+      PRISMA_SHADOW_DATABASE_URL: "postgresql://app:password@postgres:5432/app_shadow"
+      PRISMA_LOAD_SAMPLE_DATA: "true"
+      NUXT_AUTH_OIDC_ROOT_URL: "https://app.localhost"
+      NUXT_AUTH_OIDC_CLIENT_ID: "app"
+      NUXT_AUTH_OIDC_CLIENT_SECRET: "ourclientbythesewordsguarded"
+      NUXT_AUTH_OIDC_ISSUER: "http://authentik-server:9000/application/o/app/"
+      NUXT_AUTH_OIDC_AUTHORIZATION_ENDPOINT: "https://idp.localhost/application/o/authorize/"
+      NUXT_AUTH_OIDC_TOKEN_ENDPOINT: "http://authentik-server:9000/application/o/token/"
+      NUXT_AUTH_OIDC_USER_INFO_ENDPOINT: "http://authentik-server:9000/application/o/userinfo/"
+      NUXT_AUTH_OIDC_END_SESSION_ENDPOINT: "https://idp.localhost/application/o/app/end-session/"
+      NUXT_AUTH_OIDC_JWKS_URI: "http://authentik-server:9000/application/o/app/jwks/"
+      NUXT_AUTH_OIDC_SCOPES: "openid email profile"
+      NUXT_AUTH_OIDC_ROLES_ATTRIBUTE_PATH: "type(groups) == 'array' && (contains(groups[*], 'admin') && 'admin' || 'user')"
+      NUXT_AUTH_OIDC_ENFORCE_HTTPS: "false"
+      NUXT_LOG_LEVEL: "${NUXT_LOG_LEVEL:-debug}"
+    depends_on:
+      authentik-server:
+        condition: "service_healthy"
+      postgres:
+        condition: "service_healthy"
+      postgres-setup:
+        condition: "service_completed_successfully"
+
+  authentik-server: &authentik-spec
+    image: *authentik-image
+    container_name: "app-authentik-server"
+    hostname: "authentik-server"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.authentik.rule: "Host(`idp.localhost`)"
+      traefik.http.routers.authentik.entryPoints: "websecure"
+      traefik.http.routers.authentik.tls: "true"
+      traefik.http.routers.authentik.service: "authentik@docker"
+      traefik.http.services.authentik.loadBalancer.server.port: "9000"
+    restart: "always"
+    networks:
+      - "private"
+    volumes:
+      - { type: "tmpfs", target: "/run/" }
+      - { type: "tmpfs", target: "/tmp/", tmpfs: { mode: 0o1777 } }
+    configs:
+      - { source: "authentik-setup.yaml", target: "/blueprints/custom/setup.yaml", mode: 0o0644 }
+    environment:
+      AUTHENTIK_BOOTSTRAP_EMAIL: "admin@localhost"
+      AUTHENTIK_BOOTSTRAP_PASSWORD: "password"
+      AUTHENTIK_BOOTSTRAP_TOKEN: "H4!b5at+kWls-8yh4Guq"
+      AUTHENTIK_SECRET_KEY: "ourclientbythesewordsguarded"
+      AUTHENTIK_POSTGRESQL__HOST: "postgres"
+      AUTHENTIK_POSTGRESQL__PORT: "5432"
+      AUTHENTIK_POSTGRESQL__NAME: "authentik"
+      AUTHENTIK_POSTGRESQL__USER: "authentik"
+      AUTHENTIK_POSTGRESQL__PASSWORD: "password"
+      AUTHENTIK_REDIS__HOST: "valkey"
+      AUTHENTIK_REDIS__PORT: "6379"
+      AUTHENTIK_REDIS__PASSWORD: "password"
+      AUTHENTIK_REDIS__DB: "1"
+      AUTHENTIK_DISABLE_UPDATE_CHECK: "true"
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+      AUTHENTIK_DISABLE_STARTUP_ANALYTICS: "true"
+      AUTHENTIK_AVATARS: "initials"
+    command: ["server"]
+    healthcheck:
+      test: ["CMD", "ak", "healthcheck"]
+      start_period: "60s"
+      start_interval: "5s"
+      interval: "10s"
+      timeout: "10s"
+      retries: 2
+    depends_on:
+      postgres:
+        condition: "service_healthy"
+      postgres-setup:
+        condition: "service_completed_successfully"
+      valkey:
+        condition: "service_healthy"
+
+  authentik-worker:
+    <<: *authentik-spec
+    container_name: "app-authentik-worker"
+    hostname: "authentik-worker"
+    labels: {}
+    command: ["worker"]
+
+  postgres:
+    image: *postgres-image
+    container_name: "app-postgres"
+    hostname: "postgres"
+    labels:
+      traefik.enable: "true"
+      traefik.tcp.routers.postgres.rule: "HostSNI(`*`)"
+      traefik.tcp.routers.postgres.entryPoints: "postgres"
+      traefik.tcp.routers.postgres.service: "postgres@docker"
+      traefik.tcp.services.postgres.loadBalancer.server.port: "5432"
+    restart: "always"
+    networks:
+      - "private"
+    volumes:
+      - { type: "volume", source: "postgres-data", target: "/var/lib/postgresql/data/" }
+      - { type: "tmpfs", target: "/run/" }
+      - { type: "tmpfs", target: "/tmp/", tmpfs: { mode: 0o1777 } }
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "password"
+    command: >-
+      -c max_connections=500
+      -c shared_buffers=512MB
+      -c max_wal_size=2048MB
+      -c wal_compression=on
+    healthcheck:
+      test: ["CMD", "pg_isready", "-qU", "postgres"]
+      start_period: "60s"
+      start_interval: "5s"
+      interval: "10s"
+      timeout: "10s"
+      retries: 2
+
+  postgres-setup:
+    image: *postgres-image
+    container_name: "app-postgres-setup"
+    hostname: "postgres-setup"
+    restart: "no"
+    networks:
+      - "private"
+    volumes:
+      - { type: "tmpfs", target: "/var/lib/postgresql/data/" }
+      - { type: "tmpfs", target: "/run/" }
+      - { type: "tmpfs", target: "/tmp/", tmpfs: { mode: 0o1777 } }
+    configs:
+      - { source: "postgres-app.sql", target: "/docker-entrypoint-initdb.d/app.sql", mode: 0o0644 }
+      - { source: "postgres-authentik.sql", target: "/docker-entrypoint-initdb.d/authentik.sql", mode: 0o0644 }
+    environment:
+      PGHOST: "postgres"
+      PGPORT: "5432"
+      PGDATABASE: "postgres"
+      PGUSER: "postgres"
+      PGPASSWORD: "password"
+    entrypoint: "/bin/sh"
+    command: ["-euxc", 'for f in /docker-entrypoint-initdb.d/*.sql; do psql -f "$${f:?}"; done']
+    depends_on:
+      postgres:
+        condition: "service_healthy"
+
+  valkey:
+    image: *valkey-image
+    container_name: "app-valkey"
+    hostname: "valkey"
+    labels:
+      traefik.enable: "true"
+      traefik.tcp.routers.valkey.rule: "HostSNI(`*`)"
+      traefik.tcp.routers.valkey.entryPoints: "valkey"
+      traefik.tcp.routers.valkey.service: "valkey@docker"
+      traefik.tcp.services.valkey.loadBalancer.server.port: "6379"
+    restart: "always"
+    networks:
+      - "private"
+    volumes:
+      - { type: "volume", source: "valkey-data", target: "/data/" }
+      - { type: "tmpfs", target: "/run/" }
+      - { type: "tmpfs", target: "/tmp/", tmpfs: { mode: 0o1777 } }
+    configs:
+      - { source: "valkey-valkey.conf", target: "/etc/valkey/valkey.conf", mode: 0o0644 }
+    environment:
+      REDISCLI_AUTH: "password"
+    command: ["valkey-server", "/etc/valkey/valkey.conf"]
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli ping | grep -q PONG"]
+      start_period: "60s"
+      start_interval: "5s"
+      interval: "10s"
+      timeout: "10s"
+      retries: 2
+
+configs:
+  authentik-setup.yaml:
+    content: |
+      version: 1
+      metadata:
+        name: "Setup"
+        labels:
+          blueprints.goauthentik.io/description: "Setup"
+          blueprints.goauthentik.io/instantiate: "true"
+      entries:
+        # Apply "Default - Events Transport & Rules" blueprint
+        - model: "authentik_blueprints.metaapplyblueprint"
+          attrs:
+            identifiers:
+              name: "Default - Events Transport & Rules"
+            required: true
+        # Apply "Default - Authentication flow" blueprint
+        - model: "authentik_blueprints.metaapplyblueprint"
+          attrs:
+            identifiers:
+              name: "Default - Authentication flow"
+            required: true
+        # Apply "Default - Provider authorization flow (explicit consent)" blueprint
+        - model: "authentik_blueprints.metaapplyblueprint"
+          attrs:
+            identifiers:
+              name: "Default - Provider authorization flow (explicit consent)"
+            required: true
+        # Apply "System - OAuth2 Provider - Scopes" blueprint
+        - model: "authentik_blueprints.metaapplyblueprint"
+          attrs:
+            identifiers:
+              name: "System - OAuth2 Provider - Scopes"
+            required: true
+        # Provider
+        - id: "app-provider"
+          identifiers:
+            name: "App"
+          model: "authentik_providers_oauth2.oauth2provider"
+          attrs:
+            name: "App"
+            authentication_flow: !Find [authentik_flows.flow, [slug, default-authentication-flow]]
+            authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
+            invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+            client_type: "confidential"
+            client_id: "app"
+            client_secret: "ourclientbythesewordsguarded"
+            signing_key: !Find [authentik_crypto.certificatekeypair, [name, authentik Self-signed Certificate]]
+            redirect_uris:
+              - { url: "https://app.localhost/api/oidc/login/callback", matching_mode: "strict" }
+              - { url: "http://localhost:3000/api/oidc/login/callback", matching_mode: "strict" }
+            access_code_validity: "minutes=1"
+            access_token_validity: "minutes=5"
+            refresh_token_validity: "days=30"
+            property_mappings:
+              - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-openid]]
+              - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-email]]
+              - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-profile]]
+            sub_mode: "hashed_user_id"
+            include_claims_in_id_token: true
+            issuer_mode: "per_provider"
+        # Application
+        - id: "app-application"
+          identifiers:
+            name: "app"
+          model: "authentik_core.application"
+          attrs:
+            name: "app"
+            slug: "app"
+            provider: !KeyOf app-provider
+            policy_engine_mode: "any"
+        # Groups
+        - id: "admin-group"
+          identifiers:
+            name: "admin"
+          model: "authentik_core.group"
+          attrs:
+            name: "admin"
+        - id: "user-group"
+          identifiers:
+            name: "user"
+          model: "authentik_core.group"
+          attrs:
+            name: "user"
+        # Users
+        - id: "admin-user"
+          identifiers:
+            username: "admin"
+          model: "authentik_core.user"
+          attrs:
+            username: "admin"
+            name: "Admin User"
+            email: "admin@localhost"
+            password: "password"
+            is_active: true
+            path: "users"
+            groups:
+              - !Find [authentik_core.group, [name, admin]]
+        - id: "alice-user"
+          identifiers:
+            username: "alice"
+          model: "authentik_core.user"
+          attrs:
+            username: "alice"
+            name: "Alice Williams"
+            email: "alice@localhost"
+            password: "password"
+            is_active: true
+            path: "users"
+            groups:
+              - !Find [authentik_core.group, [name, user]]
+        - id: "bob-user"
+          identifiers:
+            username: "bob"
+          model: "authentik_core.user"
+          attrs:
+            username: "bob"
+            name: "Bob Roberts"
+            email: "bob@localhost"
+            password: "password"
+            is_active: true
+            path: "users"
+            groups:
+              - !Find [authentik_core.group, [name, user]]
+        - id: "carol-user"
+          identifiers:
+            username: "carol"
+          model: "authentik_core.user"
+          attrs:
+            username: "carol"
+            name: "Carol Hampton"
+            email: "carol@localhost"
+            password: "password"
+            is_active: true
+            path: "users"
+
+  postgres-app.sql:
+    content: |
+      SELECT 'CREATE USER app PASSWORD ''password'''
+      WHERE NOT EXISTS (SELECT FROM pg_user WHERE usename = 'app')\gexec
+      SELECT 'CREATE DATABASE app WITH OWNER = app ENCODING = ''UTF8'' TABLESPACE = pg_default'
+      WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'app')\gexec
+      SELECT 'CREATE DATABASE app_shadow WITH OWNER = app ENCODING = ''UTF8'' TABLESPACE = pg_default'
+      WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'app_shadow')\gexec
+
+  postgres-authentik.sql:
+    content: |
+      SELECT 'CREATE USER authentik PASSWORD ''password'''
+      WHERE NOT EXISTS (SELECT FROM pg_user WHERE usename = 'authentik')\gexec
+      SELECT 'CREATE DATABASE authentik WITH OWNER = authentik ENCODING = ''UTF8'' TABLESPACE = pg_default'
+      WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'authentik')\gexec
+
+  valkey-valkey.conf:
+    content: |
+      bind 0.0.0.0
+      loglevel warning
+      save 60 1
+      appendonly yes
+      appendfsync everysec
+      auto-aof-rewrite-min-size 16mb
+      auto-aof-rewrite-percentage 100
+      dir /data/
+      user default on ~* &* +@all -@admin >password
+
+volumes:
+  postgres-data:
+    name: "app-postgres-data"
+
+  valkey-data:
+    name: "app-valkey-data"
+
+networks:
+  public:
+    name: "app-public"
+    internal: false
+
+  private:
+    name: "app-private"
+    internal: true

@@ -1,0 +1,12 @@
+strictDepBuilds: true
+onlyBuiltDependencies:
+  - "@prisma/client"
+  - "@prisma/engines"
+  - "esbuild"
+  - "prisma"
+  - "sharp"
+  - "vue-demi"
+  - "zenstack"
+ignoredBuiltDependencies:
+  - "@parcel/watcher"
+  - "unrs-resolver"

@@ -1,0 +1,132 @@
+generator client {
+    provider = "prisma-client-js"
+    // provider     = "prisma-client-ts"
+    // output       = "../.prisma/"
+    // moduleFormat = "esm"
+    previewFeatures = ["relationJoins"]
+}
+
+datasource db {
+    provider          = "postgresql"
+    url               = env("PRISMA_DATABASE_URL")
+    shadowDatabaseUrl = env("PRISMA_SHADOW_DATABASE_URL")
+}
+
+model User {
+    id       String         @map("id") @db.Uuid @default(uuid(7))
+    username String         @map("username") @db.Text
+    fullname String         @map("fullname") @db.Text
+    email    String         @map("email") @db.VarChar(254)
+    accounts Account[]
+    sessions Session[]
+    roles    RolesOnUsers[]
+
+    @@id([id], map: "users_pkey")
+    @@unique([username], map: "users_username_key")
+    @@unique([username, id], map: "users_username_id_key")
+    @@unique([email], map: "users_email_key")
+    @@unique([email, id], map: "users_email_id_key")
+
+    @@allow("read", auth() == this)
+    @@allow("all", auth().roles?[role.permissions?[permission.name == "manage"]])
+    @@deny("delete", auth() == this)
+
+    @@map("users")
+}
+
+model Account {
+    id        String   @map("id") @db.Uuid @default(uuid(7))
+    iss       String   @map("iss") @db.Text @omit
+    sub       String   @map("sub") @db.Text @omit
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "accounts_user_id_fkey")
+    userId    String   @map("user_id") @db.Uuid
+    createdAt DateTime @map("created_at") @db.Timestamptz(3) @default(now())
+
+    @@id([id], map: "accounts_pkey")
+    @@unique([iss, sub], map: "accounts_iss_sub_key")
+    @@index([userId], map: "accounts_user_id_idx")
+
+    @@allow("read", auth() == user)
+    @@allow("all", auth().roles?[role.permissions?[permission.name == "manage"]])
+
+    @@map("accounts")
+}
+
+model Session {
+    id        String   @map("id") @db.Uuid @default(uuid(7))
+    token     String   @map("token") @db.VarChar(48) @omit
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "sessions_user_id_fkey")
+    userId    String   @map("user_id") @db.Uuid
+    sid       String?  @map("sid") @db.Text @omit
+    idToken   String?  @map("id_token") @db.Text @omit
+    createdAt DateTime @map("created_at") @db.Timestamptz(3) @default(now())
+    expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+
+    @@id([id], map: "sessions_pkey")
+    @@unique([token], map: "sessions_token_key")
+    @@index([userId], map: "sessions_user_id_idx")
+
+    @@allow("read", auth() == user)
+    @@allow("all", auth().roles?[role.permissions?[permission.name == "manage"]])
+
+    @@map("sessions")
+}
+
+model Role {
+    id          String               @map("id") @db.Uuid @default(uuid(7))
+    name        String               @map("name") @db.VarChar(100)
+    users       RolesOnUsers[]
+    permissions PermissionsOnRoles[]
+
+    @@id([id], map: "roles_pkey")
+    @@unique([name], map: "roles_name_key")
+
+    @@allow("read", true)
+
+    @@map("roles")
+}
+
+model RolesOnUsers {
+    role   Role   @relation(fields: [roleId], references: [id], onDelete: Restrict, map: "roles_users_role_id_fkey")
+    roleId String @map("role_id") @db.Uuid @omit
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, map: "roles_users_user_id_fkey")
+    userId String @map("user_id") @db.Uuid @omit
+
+    @@id([roleId, userId], map: "roles_users_pkey")
+    @@index([roleId], map: "roles_users_role_id_idx")
+    @@index([userId], map: "roles_users_user_id_idx")
+
+    @@allow("read", auth() == user)
+    @@allow("all", auth().roles?[role.permissions?[permission.name == "manage"]])
+    @@deny("delete", auth() == user && role.name == "admin")
+
+    @@map("roles_users")
+}
+
+model Permission {
+    id    String               @map("id") @db.Uuid @default(uuid(7))
+    name  String               @map("name") @db.VarChar(100)
+    roles PermissionsOnRoles[]
+
+    @@id([id], map: "permissions_pkey")
+    @@unique([name], map: "permissions_name_key")
+
+    @@allow("read", true)
+
+    @@map("permissions")
+}
+
+model PermissionsOnRoles {
+    permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade, map: "permissions_roles_permission_id_fkey")
+    permissionId String     @map("permission_id") @db.Uuid @omit
+    role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade, map: "permissions_roles_role_id_fkey")
+    roleId       String     @map("role_id") @db.Uuid @omit
+
+    @@id([permissionId, roleId], map: "permissions_roles_pkey")
+    @@index([permissionId], map: "permissions_roles_permission_id_idx")
+    @@index([roleId], map: "permissions_roles_role_id_idx")
+
+    @@allow("read", true)
+
+    @@map("permissions_roles")
+}

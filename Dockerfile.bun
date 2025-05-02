@@ -1,0 +1,43 @@
+##################################################
+## "build" stage
+##################################################
+
+FROM docker.io/oven/bun:1.2.11-debian@sha256:dc64e31448a410be8c868db2633feb0b4c28faf27579837b63bbe8759aeb927b AS build
+
+ENV BUN_INSTALL=/bun
+ENV PATH=${BUN_INSTALL}/bin:${PATH}
+ENV NITRO_PRESET=bun
+ENV PRISMA_DATABASE_URL=postgresql://localhost:5432/app
+ENV PRISMA_SHADOW_DATABASE_URL=postgresql://localhost:5432/app_shadow
+
+RUN bun install -g node-gyp
+
+WORKDIR /src/
+
+COPY ./package.json ./pnpm-lock.yaml ./pnpm-workspace.yaml /src/
+COPY ./prisma/ /src/prisma/
+
+RUN --mount=type=cache,id=bun,dst=/bun/install/cache/ \
+	bun install
+
+COPY ./ /src/
+
+RUN --network=none --mount=type=cache,id=bun,dst=/bun/install/cache/ \
+	bun run lint build
+
+##################################################
+## "main" stage
+##################################################
+
+FROM gcr.io/distroless/cc-debian12:nonroot@sha256:3c62069321a46fd2fe1072fa2dff4c41deef3055be9de8a80e51bd8354ef893c AS main
+
+COPY --from=build --chown=0:0 /usr/local/bin/bun /bun
+COPY --from=build --chown=0:0 /src/.output/ /app/
+
+WORKDIR /app/
+
+HEALTHCHECK --start-period=60s --interval=30s --timeout=10s --retries=2 \
+	CMD ["/bun", "run", "/app/bin/healthcheck.mjs"]
+
+ENTRYPOINT ["/bun", "run", "/app/server/index.mjs"]
+CMD []
