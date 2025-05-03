@@ -3,7 +3,7 @@ generator client {
     // provider     = "prisma-client-ts"
     // output       = "../.prisma/"
     // moduleFormat = "esm"
-    previewFeatures = ["relationJoins"]
+    previewFeatures = ["relationJoins", "queryCompiler", "driverAdapters"]
 }
 
 datasource db {

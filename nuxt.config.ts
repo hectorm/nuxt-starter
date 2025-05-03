@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import url from "node:url";
 
 import { defineNuxtConfig } from "nuxt/config";
 
@@ -78,6 +79,7 @@ export default defineNuxtConfig({
   nitro: {
     experimental: {
       tasks: true,
+      wasm: true,
     },
     tasks: {
       "db:migrate": { description: "Run database migrations" },
@@ -112,18 +114,17 @@ export default defineNuxtConfig({
       const prismaOutDir = path.join(nitro.options.output.dir, "prisma");
       await fs.cp(prismaInDir, prismaOutDir, { recursive: true });
 
+      // Copy Prisma client to the output directory
+      const prismaClientPkgUrl = import.meta.resolve("@prisma/client/package.json");
+      const prismaClientInDir = path.join(url.fileURLToPath(prismaClientPkgUrl), "..", "..", "..", ".prisma", "client");
+      const prismaClientOutDir = path.join(nitro.options.output.serverDir, "node_modules", ".prisma", "client");
+      await fs.cp(prismaClientInDir, prismaClientOutDir, { recursive: true });
+
       // Copy Prisma engines to the output directory
-      const prismaEnginesInDir = path.join(__dirname, "node_modules", "@prisma", "engines");
-      const prismaEnginesFiles = await fs.readdir(prismaEnginesInDir);
-      const prismaSchemaEngineOutDir = path.join(nitro.options.output.serverDir, "node_modules", "@prisma", "engines");
-      const prismaQueryEngineOutDir = path.join(nitro.options.output.serverDir, "node_modules", ".prisma", "client");
-      for (const file of prismaEnginesFiles) {
-        if (/^schema-engine-.+$/.test(file)) {
-          await fs.cp(path.join(prismaEnginesInDir, file), path.join(prismaSchemaEngineOutDir, file));
-        } else if (/^libquery_engine-.+$/.test(file)) {
-          await fs.cp(path.join(prismaEnginesInDir, file), path.join(prismaQueryEngineOutDir, file));
-        }
-      }
+      const prismaEnginesPkgUrl = import.meta.resolve("@prisma/engines/package.json");
+      const prismaEnginesInDir = path.join(url.fileURLToPath(prismaEnginesPkgUrl), "..");
+      const prismaEnginesOutDir = path.join(nitro.options.output.serverDir, "node_modules", "@prisma", "engines");
+      await fs.cp(prismaEnginesInDir, prismaEnginesOutDir, { recursive: true });
     },
   },
   i18n: {

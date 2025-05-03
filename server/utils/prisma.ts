@@ -1,8 +1,11 @@
+import { PrismaPg } from "@prisma/adapter-pg";
 import { Prisma, PrismaClient } from "@prisma/client";
 
 import { logger } from "~~/server/utils/logger";
 
+export const adapter = new PrismaPg({ connectionString: process.env.PRISMA_DATABASE_URL });
 export const prisma: PrismaClient<Prisma.PrismaClientOptions, "query" | "info" | "warn" | "error"> = new PrismaClient({
+  adapter,
   transactionOptions: {
     isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
   },
