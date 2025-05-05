@@ -39,6 +39,7 @@ const menus = computed<NavigationMenuItem[][]>(() => {
   const start: NavigationMenuItem[] = [
     {
       label: i18n.t("pages.home.title"),
+      "aria-label": i18n.t("pages.home.title"),
       icon: "i-lucide-house",
       to: "/",
     },
@@ -47,6 +48,7 @@ const menus = computed<NavigationMenuItem[][]>(() => {
   const end: NavigationMenuItem[] = [
     {
       label: i18n.t("pages.about.title"),
+      "aria-label": i18n.t("pages.about.title"),
       icon: "i-lucide-info",
       to: "/about",
     },
@@ -57,9 +59,9 @@ const menus = computed<NavigationMenuItem[][]>(() => {
 </script>
 
 <template>
-  <div class="flex flex-row h-screen">
+  <div class="flex h-screen flex-row">
     <DefineMenu>
-      <div class="flex flex-row p-4 gap-2">
+      <div class="flex flex-row gap-2 p-4">
         <UButton
           v-if="!lgAndLarger"
           :aria-label="$t('layouts.default.sidebar.toggle')"
@@ -69,12 +71,12 @@ const menus = computed<NavigationMenuItem[][]>(() => {
           square
           @click="toggle()"
         />
-        <NuxtLink to="/" class="flex flex-row gap-2">
+        <NuxtLink to="/" class="flex flex-row gap-2" :aria-label="$t('app.name')">
           <AppLogo class="h-8" />
-          <h1 v-if="!collapsed" class="text-2xl font-bold">App</h1>
+          <h1 v-if="!collapsed" class="text-2xl font-bold">{{ $t("app.name") }}</h1>
         </NuxtLink>
       </div>
-      <nav class="flex flex-col flex-1 items-stretch px-3.5 py-2 gap-1">
+      <nav class="flex flex-1 flex-col items-stretch gap-1 px-3.5 py-2">
         <UNavigationMenu
           v-for="(menu, index) in menus"
           :key="index"
@@ -86,14 +88,14 @@ const menus = computed<NavigationMenuItem[][]>(() => {
         >
         </UNavigationMenu>
       </nav>
-      <div class="flex flex-col items-stretch px-3.5 py-2 gap-1 border-t border-default">
+      <div class="flex flex-col items-stretch gap-1 border-t border-default px-3.5 py-2">
         <UserMenu class="p-2" :collapsed="collapsed" />
       </div>
     </DefineMenu>
     <template v-if="lgAndLarger">
       <aside
-        class="hidden lg:flex flex-col overflow-x-hidden border-r border-default bg-elevated/25 transition-width duration-100"
-        :class="[collapsed ? 'w-16 min-w-16 max-w-16' : 'w-[25%] min-w-48 max-w-64']"
+        class="transition-width hidden flex-col overflow-x-hidden border-r border-default bg-elevated/25 duration-100 lg:flex"
+        :class="[collapsed ? 'w-16 max-w-16 min-w-16' : 'w-[25%] max-w-64 min-w-48']"
         :style="{ 'scrollbar-width': 'thin' }"
       >
         <ReuseMenu />

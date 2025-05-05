@@ -262,14 +262,29 @@ configs:
             "secret": "ourclientbythesewordsguarded",
             "protocolMappers": [
               {
-                "name": "realm roles",
+                "name": "roles",
                 "protocol": "openid-connect",
                 "protocolMapper": "oidc-usermodel-realm-role-mapper",
                 "config": {
-                  "multivalued": "true",
                   "claim.name": "roles",
+                  "multivalued": "true",
                   "jsonType.label": "String",
-                  "id.token.claim": "false",
+                  "id.token.claim": "true",
+                  "access.token.claim": "false",
+                  "lightweight.claim": "false",
+                  "userinfo.token.claim": "true",
+                  "introspection.token.claim": "false"
+                }
+              },
+              {
+                "name": "groups",
+                "protocol": "openid-connect",
+                "protocolMapper": "oidc-group-membership-mapper",
+                "config": {
+                  "claim.name": "groups",
+                  "full.path": "false",
+                  "jsonType.label": "String",
+                  "id.token.claim": "true",
                   "access.token.claim": "false",
                   "lightweight.claim": "false",
                   "userinfo.token.claim": "true",
@@ -281,54 +296,106 @@ configs:
         ],
         "roles": {
           "realm": [
-            {
-              "name": "admin",
-              "composites": { "realm": ["user"] }
-            },
-            {
-              "name": "user"
-            }
+            { "name": "admin" }
           ]
         },
+        "groups": [
+          {
+            "name": "management",
+            "path": "/management",
+            "realmRoles": ["admin"]
+          },
+          {
+            "name": "engineering",
+            "path": "/engineering",
+            "realmRoles": []
+          },
+          {
+            "name": "finance",
+            "path": "/finance",
+            "realmRoles": []
+          },
+          {
+            "name": "sales",
+            "path": "/sales",
+            "realmRoles": []
+          },
+          {
+            "name": "marketing",
+            "path": "/marketing",
+            "realmRoles": []
+          },
+          {
+            "name": "hr",
+            "path": "/hr",
+            "realmRoles": []
+          }
+        ],
         "users": [
           {
-            "username": "admin",
             "enabled": true,
-            "firstName": "Admin",
-            "lastName": "User",
-            "email": "admin@localhost",
-            "emailVerified": true,
-            "realmRoles" : ["admin", "default-roles-acme"],
-            "credentials": [{ "type": "password", "value": "password" }]
-          },
-          {
             "username": "alice",
-            "enabled": true,
             "firstName": "Alice",
-            "lastName": "Williams",
+            "lastName": "Bennett",
             "email": "alice@localhost",
             "emailVerified": true,
-            "realmRoles" : ["user", "default-roles-acme"],
+            "realmRoles" : ["default-roles-acme"],
+            "groups": ["management"],
             "credentials": [{ "type": "password", "value": "password" }]
           },
           {
-            "username": "bob",
             "enabled": true,
+            "username": "bob",
             "firstName": "Bob",
-            "lastName": "Roberts",
+            "lastName": "Collins",
             "email": "bob@localhost",
             "emailVerified": true,
-            "realmRoles" : ["user", "default-roles-acme"],
+            "realmRoles" : ["default-roles-acme"],
+            "groups": ["management"],
             "credentials": [{ "type": "password", "value": "password" }]
           },
           {
-            "username": "carol",
             "enabled": true,
+            "username": "carol",
             "firstName": "Carol",
-            "lastName": "Hampton",
+            "lastName": "Davis",
             "email": "carol@localhost",
             "emailVerified": true,
             "realmRoles" : ["default-roles-acme"],
+            "groups": ["engineering"],
+            "credentials": [{ "type": "password", "value": "password" }]
+          },
+          {
+            "enabled": true,
+            "username": "dan",
+            "firstName": "Dan",
+            "lastName": "Edwards",
+            "email": "dan@localhost",
+            "emailVerified": true,
+            "realmRoles" : ["default-roles-acme"],
+            "groups": ["finance"],
+            "credentials": [{ "type": "password", "value": "password" }]
+          },
+          {
+            "enabled": true,
+            "username": "erin",
+            "firstName": "Erin",
+            "lastName": "Fisher",
+            "email": "erin@localhost",
+            "emailVerified": true,
+            "realmRoles" : ["default-roles-acme"],
+            "groups": ["sales", "marketing"],
+            "credentials": [{ "type": "password", "value": "password" }]
+          },
+          {
+            "enabled": true,
+            "username": "frank",
+            "firstName": "Frank",
+            "lastName": "Graham",
+            "email": "frank@localhost",
+            "emailVerified": true,
+            "realmRoles" : ["default-roles-acme"],
+            "groups": ["hr"],
             "credentials": [{ "type": "password", "value": "password" }]
           }
         ]

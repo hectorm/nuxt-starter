@@ -33,6 +33,23 @@ CREATE TABLE "sessions" (
 );
 
 -- CreateTable
+CREATE TABLE "groups" (
+    "id" UUID NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+
+    CONSTRAINT "groups_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "groups_users" (
+    "group_id" UUID NOT NULL,
+    "user_id" UUID NOT NULL,
+
+    CONSTRAINT "groups_users_pkey" PRIMARY KEY ("group_id","user_id")
+);
+
+-- CreateTable
 CREATE TABLE "roles" (
     "id" UUID NOT NULL,
     "name" VARCHAR(100) NOT NULL,
@@ -46,6 +63,14 @@ CREATE TABLE "roles_users" (
     "user_id" UUID NOT NULL,
 
     CONSTRAINT "roles_users_pkey" PRIMARY KEY ("role_id","user_id")
+);
+
+-- CreateTable
+CREATE TABLE "roles_groups" (
+    "role_id" UUID NOT NULL,
+    "group_id" UUID NOT NULL,
+
+    CONSTRAINT "roles_groups_pkey" PRIMARY KEY ("role_id","group_id")
 );
 
 -- CreateTable
@@ -89,6 +114,15 @@ CREATE INDEX "sessions_user_id_idx" ON "sessions"("user_id");
 CREATE UNIQUE INDEX "sessions_token_key" ON "sessions"("token");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "groups_name_key" ON "groups"("name");
+
+-- CreateIndex
+CREATE INDEX "groups_users_group_id_idx" ON "groups_users"("group_id");
+
+-- CreateIndex
+CREATE INDEX "groups_users_user_id_idx" ON "groups_users"("user_id");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "roles_name_key" ON "roles"("name");
 
 -- CreateIndex
@@ -96,6 +130,12 @@ CREATE INDEX "roles_users_role_id_idx" ON "roles_users"("role_id");
 
 -- CreateIndex
 CREATE INDEX "roles_users_user_id_idx" ON "roles_users"("user_id");
+
+-- CreateIndex
+CREATE INDEX "roles_groups_role_id_idx" ON "roles_groups"("role_id");
+
+-- CreateIndex
+CREATE INDEX "roles_groups_group_id_idx" ON "roles_groups"("group_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "permissions_name_key" ON "permissions"("name");
@@ -113,10 +153,22 @@ ALTER TABLE "accounts" ADD CONSTRAINT "accounts_user_id_fkey" FOREIGN KEY ("user
 ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "groups_users" ADD CONSTRAINT "groups_users_group_id_fkey" FOREIGN KEY ("group_id") REFERENCES "groups"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "groups_users" ADD CONSTRAINT "groups_users_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "roles_users" ADD CONSTRAINT "roles_users_role_id_fkey" FOREIGN KEY ("role_id") REFERENCES "roles"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "roles_users" ADD CONSTRAINT "roles_users_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "roles_groups" ADD CONSTRAINT "roles_groups_role_id_fkey" FOREIGN KEY ("role_id") REFERENCES "roles"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "roles_groups" ADD CONSTRAINT "roles_groups_group_id_fkey" FOREIGN KEY ("group_id") REFERENCES "groups"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "permissions_roles" ADD CONSTRAINT "permissions_roles_permission_id_fkey" FOREIGN KEY ("permission_id") REFERENCES "permissions"("id") ON DELETE CASCADE ON UPDATE CASCADE;

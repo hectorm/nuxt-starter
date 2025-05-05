@@ -24,8 +24,13 @@ const menu = computed<NavigationMenuItem[]>(() => {
     },
     {
       label: i18n.t("pages.settings.users.tab"),
-      icon: "i-lucide-users",
+      icon: "i-lucide-user",
       to: "/settings/users",
+    },
+    {
+      label: i18n.t("pages.settings.groups.tab"),
+      icon: "i-lucide-users",
+      to: "/settings/groups",
     },
   ];
 
@@ -41,8 +46,8 @@ definePageMeta({
 </script>
 
 <template>
-  <div class="flex flex-col w-full overflow-auto">
-    <header class="flex flex-row items-center p-4 gap-1.5 border-b border-default">
+  <div class="flex w-full flex-col overflow-auto">
+    <header class="flex flex-row items-center gap-1.5 border-b border-default p-4">
       <UButton
         :aria-label="$t('layouts.default.sidebar.toggle')"
         icon="i-lucide-menu"
@@ -59,7 +64,7 @@ definePageMeta({
         :items="menu"
         highlight
         highlight-color="primary"
-        class="px-4 border-b border-default"
+        class="border-b border-default px-4"
       />
       <NuxtPage />
     </main>

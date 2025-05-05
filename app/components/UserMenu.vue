@@ -117,10 +117,9 @@ const items = computed<DropdownMenuItem[]>(() => {
     :ui="{ content: collapsed ? 'w-48' : 'w-(--reka-dropdown-menu-trigger-width)' }"
   >
     <UButton
-      v-bind="{
-        label: collapsed ? undefined : (user?.fullname ?? i18n.t('components.userMenu.anonymous.label')),
-        trailingIcon: collapsed ? 'i-lucide-circle-user' : 'i-lucide-chevrons-up-down',
-      }"
+      :label="collapsed ? undefined : (user?.fullname ?? i18n.t('components.userMenu.anonymous.label'))"
+      :aria-label="user?.fullname ?? i18n.t('components.userMenu.anonymous.label')"
+      :trailing-icon="collapsed ? 'i-lucide-circle-user' : 'i-lucide-chevrons-up-down'"
       class="data-[state=open]:bg-elevated"
       color="neutral"
       variant="ghost"

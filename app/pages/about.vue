@@ -16,8 +16,8 @@ definePageMeta({
 </script>
 
 <template>
-  <div class="flex flex-col w-full overflow-auto">
-    <header class="flex flex-row items-center p-4 gap-1.5 border-b border-default">
+  <div class="flex w-full flex-col overflow-auto">
+    <header class="flex flex-row items-center gap-1.5 border-b border-default p-4">
       <UButton
         :aria-label="$t('layouts.default.sidebar.toggle')"
         icon="i-lucide-menu"

@@ -9,53 +9,53 @@ import UModal from "@nuxt/ui/runtime/components/Modal.vue";
 
 import type { RouterOutputs } from "~/types/trpc";
 
-type UserReadOutput = RouterOutputs["user"]["read"];
-type UserDeleteOuput = RouterOutputs["user"]["delete"];
+type GroupReadOutput = RouterOutputs["group"]["read"];
+type GroupDeleteOuput = RouterOutputs["group"]["delete"];
 
 const props = defineProps<{
   id: string;
 }>();
 
-const emit = defineEmits<{ close: [{ user: UserDeleteOuput | null; error: Error | null }] }>();
+const emit = defineEmits<{ close: [{ group: GroupDeleteOuput | null; error: Error | null }] }>();
 
 const { $client } = useNuxtApp();
 
-const user = ref<UserReadOutput>(await $client.user.read.query({ id: props.id }));
+const group = ref<GroupReadOutput>(await $client.group.read.query({ id: props.id }));
 
 const onSubmit = async (_: FormSubmitEvent<unknown>) => {
-  if (user.value) {
+  if (group.value) {
     try {
-      user.value = await $client.user.delete.mutate({ id: user.value.id });
-      emit("close", { user: user.value, error: null });
+      group.value = await $client.group.delete.mutate({ id: group.value.id });
+      emit("close", { group: group.value, error: null });
     } catch (error) {
-      emit("close", { user: null, error: error as Error });
+      emit("close", { group: null, error: error as Error });
     }
   } else {
-    emit("close", { user: null, error: new Error("User not found") });
+    emit("close", { group: null, error: new Error("Group not found") });
   }
 };
 
 const onCancel = () => {
-  emit("close", { user: null, error: null });
+  emit("close", { group: null, error: null });
 };
 </script>
 
 <template>
   <UModal
-    :title="$t('components.users.deleteModal.title')"
-    :description="$t('components.users.deleteModal.description')"
+    :title="$t('components.groups.deleteModal.title')"
+    :description="$t('components.groups.deleteModal.description')"
     :close="false"
     :dismissible="false"
   >
     <template #body>
       <UForm :state="{}" class="w-full max-w-150 space-y-4" @submit="onSubmit">
-        <div>{{ $t("components.users.deleteModal.form.message", { username: user?.username }) }}</div>
+        <div>{{ $t("components.groups.deleteModal.form.message", { name: group?.name }) }}</div>
         <div class="flex justify-end gap-2">
           <UButton type="button" icon="i-lucide-ban" color="neutral" variant="subtle" @click="onCancel">
-            {{ $t("components.users.deleteModal.form.cancel.label") }}
+            {{ $t("components.groups.deleteModal.form.cancel.label") }}
           </UButton>
           <UButton type="submit" icon="i-lucide-trash-2" color="error" variant="solid">
-            {{ $t("components.users.deleteModal.form.delete.label") }}
+            {{ $t("components.groups.deleteModal.form.delete.label") }}
           </UButton>
         </div>
       </UForm>

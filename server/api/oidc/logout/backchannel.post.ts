@@ -36,8 +36,8 @@ export default defineEventHandler(async (event) => {
   }
 
   if (payload.iss && payload.sub) {
-    const account = await prisma.account.findFirst({
-      where: { iss: payload.iss, sub: payload.sub },
+    const account = await prisma.account.findUnique({
+      where: { iss_sub: { iss: payload.iss, sub: payload.sub } },
       select: { userId: true },
     });
     if (account) {

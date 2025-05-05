@@ -46,8 +46,8 @@ useSeoMeta({
 
 <template>
   <UApp :locale="locale">
-    <div class="flex flex-col h-screen overflow-auto items-center justify-between px-4 py-8 gap-8">
-      <div class="flex flex-col flex-1 items-center justify-center w-full gap-4">
+    <div class="flex h-screen flex-col items-center justify-between gap-8 overflow-auto px-4 py-8">
+      <div class="flex w-full flex-1 flex-col items-center justify-center gap-4">
         <h1 class="text-6xl font-bold text-primary">
           {{ error.statusCode }}
         </h1>
@@ -58,7 +58,7 @@ useSeoMeta({
           {{ i18n.t("pages.error.back") }}
         </UButton>
       </div>
-      <div v-if="dev" class="flex flex-col items-center justify-center w-full gap-4">
+      <div v-if="dev" class="flex w-full flex-col items-center justify-center gap-4">
         <UTextarea
           :model-value="error.stack"
           color="neutral"

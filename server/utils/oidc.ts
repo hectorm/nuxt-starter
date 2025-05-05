@@ -39,7 +39,8 @@ export interface OIDCOptions {
   usernameAttributePath: string;
   fullnameAttributePath: string;
   emailAttributePath: string;
-  rolesAttributePath: string;
+  rolesAttributePath?: string;
+  groupsAttributePath?: string;
   allowedPath: string;
 }
 
@@ -56,7 +57,8 @@ export interface OIDCUserProfile {
   preferred_username: string;
   name: string;
   email: string;
-  roles: string[];
+  roles?: string[];
+  groups?: string[];
 }
 
 export class OIDC {
@@ -76,7 +78,8 @@ export class OIDC {
   public usernameAttributePath: string;
   public fullnameAttributePath: string;
   public emailAttributePath: string;
-  public rolesAttributePath: string;
+  public rolesAttributePath?: string;
+  public groupsAttributePath?: string;
   public allowedPath: string;
 
   public httpRequestOptions: HttpRequestOptions<unknown, unknown>;
@@ -109,6 +112,7 @@ export class OIDC {
     this.fullnameAttributePath = options.fullnameAttributePath;
     this.emailAttributePath = options.emailAttributePath;
     this.rolesAttributePath = options.rolesAttributePath;
+    this.groupsAttributePath = options.groupsAttributePath;
     this.allowedPath = options.allowedPath;
 
     this.httpRequestOptions = {
@@ -197,7 +201,8 @@ export class OIDC {
       profile.preferred_username = jmespath.search(idTokenClaims, this.usernameAttributePath) || null;
       profile.name = jmespath.search(idTokenClaims, this.fullnameAttributePath) || null;
       profile.email = jmespath.search(idTokenClaims, this.emailAttributePath) || null;
-      profile.roles = jmespath.search(idTokenClaims, this.rolesAttributePath) || null;
+      if (this.rolesAttributePath) profile.roles = jmespath.search(idTokenClaims, this.rolesAttributePath) || null;
+      if (this.groupsAttributePath) profile.groups = jmespath.search(idTokenClaims, this.groupsAttributePath) || null;
     } else {
       logger.debug(idTokenClaims, "ID token do not match the allowed path");
     }
@@ -211,7 +216,8 @@ export class OIDC {
           profile.preferred_username ??= jmespath.search(userInfo, this.usernameAttributePath) || null;
           profile.name ??= jmespath.search(userInfo, this.fullnameAttributePath) || null;
           profile.email ??= jmespath.search(userInfo, this.emailAttributePath) || null;
-          profile.roles ??= jmespath.search(userInfo, this.rolesAttributePath) || null;
+          if (this.rolesAttributePath) profile.roles ??= jmespath.search(userInfo, this.rolesAttributePath) || null;
+          if (this.groupsAttributePath) profile.groups ??= jmespath.search(userInfo, this.groupsAttributePath) || null;
         } else {
           logger.debug(userInfo, "UserInfo response do not match the allowed path");
         }
@@ -228,6 +234,10 @@ export class OIDC {
 
     if (typeof profile.roles === "string") {
       profile.roles = [profile.roles];
+    }
+
+    if (typeof profile.groups === "string") {
+      profile.groups = [profile.groups];
     }
 
     return profile as OIDCUserProfile;

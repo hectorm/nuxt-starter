@@ -42,6 +42,14 @@ export class Lucia {
     },
   });
 
+  public groupSelect = Prisma.validator<Prisma.GroupSelect>()({
+    id: true,
+    name: true,
+    roles: {
+      select: { role: { select: this.roleSelect } },
+    },
+  });
+
   public userSelect = Prisma.validator<Prisma.UserSelect>()({
     id: true,
     username: true,
@@ -49,6 +57,9 @@ export class Lucia {
     email: true,
     roles: {
       select: { role: { select: this.roleSelect } },
+    },
+    groups: {
+      select: { group: { select: this.groupSelect } },
     },
   });
 

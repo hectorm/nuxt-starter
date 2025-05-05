@@ -15,13 +15,14 @@ generator client {
 }
 
 model User {
-  id       String         @default(uuid(7)) @map("id") @db.Uuid()
-  username String         @map("username") @db.Text()
-  fullname String         @map("fullname") @db.Text()
-  email    String         @map("email") @db.VarChar(254)
+  id       String          @default(uuid(7)) @map("id") @db.Uuid()
+  username String          @map("username") @db.Text()
+  fullname String          @map("fullname") @db.Text()
+  email    String          @map("email") @db.VarChar(254)
   accounts Account[]
   sessions Session[]
   roles    RolesOnUsers[]
+  groups   GroupsOnUsers[]
 
   @@id([id], map: "users_pkey")
   @@unique([username], map: "users_username_key")
@@ -61,10 +62,35 @@ model Session {
   @@map("sessions")
 }
 
+model Group {
+  id          String          @default(uuid(7)) @map("id") @db.Uuid()
+  name        String          @map("name") @db.Text()
+  description String?         @map("description") @db.Text()
+  users       GroupsOnUsers[]
+  roles       RolesOnGroups[]
+
+  @@id([id], map: "groups_pkey")
+  @@unique([name], map: "groups_name_key")
+  @@map("groups")
+}
+
+model GroupsOnUsers {
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade, map: "groups_users_group_id_fkey")
+  groupId String @map("group_id") @db.Uuid()
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade, map: "groups_users_user_id_fkey")
+  userId  String @map("user_id") @db.Uuid()
+
+  @@id([groupId, userId], map: "groups_users_pkey")
+  @@index([groupId], map: "groups_users_group_id_idx")
+  @@index([userId], map: "groups_users_user_id_idx")
+  @@map("groups_users")
+}
+
 model Role {
   id          String               @default(uuid(7)) @map("id") @db.Uuid()
   name        String               @map("name") @db.VarChar(100)
   users       RolesOnUsers[]
+  groups      RolesOnGroups[]
   permissions PermissionsOnRoles[]
 
   @@id([id], map: "roles_pkey")
@@ -82,6 +108,18 @@ model RolesOnUsers {
   @@index([roleId], map: "roles_users_role_id_idx")
   @@index([userId], map: "roles_users_user_id_idx")
   @@map("roles_users")
+}
+
+model RolesOnGroups {
+  role    Role   @relation(fields: [roleId], references: [id], onDelete: Cascade, map: "roles_groups_role_id_fkey")
+  roleId  String @map("role_id") @db.Uuid()
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade, map: "roles_groups_group_id_fkey")
+  groupId String @map("group_id") @db.Uuid()
+
+  @@id([roleId, groupId], map: "roles_groups_pkey")
+  @@index([roleId], map: "roles_groups_role_id_idx")
+  @@index([groupId], map: "roles_groups_group_id_idx")
+  @@map("roles_groups")
 }
 
 model Permission {

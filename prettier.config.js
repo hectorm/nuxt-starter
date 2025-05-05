@@ -1,5 +1,5 @@
 export default {
-  plugins: ["@ianvs/prettier-plugin-sort-imports"],
+  plugins: ["@ianvs/prettier-plugin-sort-imports", "prettier-plugin-tailwindcss"],
   printWidth: 120,
   importOrder: [
     "<TYPES>^(node|bun|deno):",
@@ -28,4 +28,5 @@ export default {
     "^[.]",
   ],
   importOrderTypeScriptVersion: "5.0.0",
+  tailwindStylesheet: "./app/assets/css/main.css",
 };

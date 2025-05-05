@@ -13,13 +13,14 @@ datasource db {
 }
 
 model User {
-    id       String         @map("id") @db.Uuid @default(uuid(7))
-    username String         @map("username") @db.Text
-    fullname String         @map("fullname") @db.Text
-    email    String         @map("email") @db.VarChar(254)
+    id       String          @map("id") @db.Uuid @default(uuid(7))
+    username String          @map("username") @db.Text
+    fullname String          @map("fullname") @db.Text
+    email    String          @map("email") @db.VarChar(254)
     accounts Account[]
     sessions Session[]
     roles    RolesOnUsers[]
+    groups   GroupsOnUsers[]
 
     @@id([id], map: "users_pkey")
     @@unique([username], map: "users_username_key")
@@ -28,7 +29,8 @@ model User {
     @@unique([email, id], map: "users_email_id_key")
 
     @@allow("read", auth() == this)
-    @@allow("all", auth().roles?[role.permissions?[permission.name == "manage"]])
+    @@allow("all", (auth().roles?[role.permissions?[permission.name == "manage"]]))
+    @@allow("all", (auth().groups?[group.roles?[role.permissions?[permission.name == "manage"]]]))
     @@deny("delete", auth() == this)
 
     @@map("users")
@@ -47,7 +49,8 @@ model Account {
     @@index([userId], map: "accounts_user_id_idx")
 
     @@allow("read", auth() == user)
-    @@allow("all", auth().roles?[role.permissions?[permission.name == "manage"]])
+    @@allow("all", (auth().roles?[role.permissions?[permission.name == "manage"]]))
+    @@allow("all", (auth().groups?[group.roles?[role.permissions?[permission.name == "manage"]]]))
 
     @@map("accounts")
 }
@@ -67,15 +70,51 @@ model Session {
     @@index([userId], map: "sessions_user_id_idx")
 
     @@allow("read", auth() == user)
-    @@allow("all", auth().roles?[role.permissions?[permission.name == "manage"]])
+    @@allow("all", (auth().roles?[role.permissions?[permission.name == "manage"]]))
+    @@allow("all", (auth().groups?[group.roles?[role.permissions?[permission.name == "manage"]]]))
 
     @@map("sessions")
+}
+
+model Group {
+    id          String          @map("id") @db.Uuid @default(uuid(7))
+    name        String          @map("name") @db.Text
+    description String?         @map("description") @db.Text
+    users       GroupsOnUsers[]
+    roles       RolesOnGroups[]
+
+    @@id([id], map: "groups_pkey")
+    @@unique([name], map: "groups_name_key")
+
+    @@allow("read", users?[userId == auth().id])
+    @@allow("all", (auth().roles?[role.permissions?[permission.name == "manage"]]))
+    @@allow("all", (auth().groups?[group.roles?[role.permissions?[permission.name == "manage"]]]))
+
+    @@map("groups")
+}
+
+model GroupsOnUsers {
+    group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade, map: "groups_users_group_id_fkey")
+    groupId String @map("group_id") @db.Uuid @omit
+    user    User   @relation(fields: [userId], references: [id], onDelete: Cascade, map: "groups_users_user_id_fkey")
+    userId  String @map("user_id") @db.Uuid @omit
+
+    @@id([groupId, userId], map: "groups_users_pkey")
+    @@index([groupId], map: "groups_users_group_id_idx")
+    @@index([userId], map: "groups_users_user_id_idx")
+
+    @@allow("read", auth() == user || group.users?[userId == auth().id])
+    @@allow("all", (auth().roles?[role.permissions?[permission.name == "manage"]]))
+    @@allow("all", (auth().groups?[group.roles?[role.permissions?[permission.name == "manage"]]]))
+
+    @@map("groups_users")
 }
 
 model Role {
     id          String               @map("id") @db.Uuid @default(uuid(7))
     name        String               @map("name") @db.VarChar(100)
     users       RolesOnUsers[]
+    groups      RolesOnGroups[]
     permissions PermissionsOnRoles[]
 
     @@id([id], map: "roles_pkey")
@@ -97,10 +136,27 @@ model RolesOnUsers {
     @@index([userId], map: "roles_users_user_id_idx")
 
     @@allow("read", auth() == user)
-    @@allow("all", auth().roles?[role.permissions?[permission.name == "manage"]])
-    @@deny("delete", auth() == user && role.name == "admin")
+    @@allow("all", (auth().roles?[role.permissions?[permission.name == "manage"]]))
+    @@allow("all", (auth().groups?[group.roles?[role.permissions?[permission.name == "manage"]]]))
 
     @@map("roles_users")
+}
+
+model RolesOnGroups {
+    role    Role   @relation(fields: [roleId], references: [id], onDelete: Cascade, map: "roles_groups_role_id_fkey")
+    roleId  String @map("role_id") @db.Uuid @omit
+    group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade, map: "roles_groups_group_id_fkey")
+    groupId String @map("group_id") @db.Uuid @omit
+
+    @@id([roleId, groupId], map: "roles_groups_pkey")
+    @@index([roleId], map: "roles_groups_role_id_idx")
+    @@index([groupId], map: "roles_groups_group_id_idx")
+
+    @@allow("read", true)
+    @@allow("all", (auth().roles?[role.permissions?[permission.name == "manage"]]))
+    @@allow("all", (auth().groups?[group.roles?[role.permissions?[permission.name == "manage"]]]))
+
+    @@map("roles_groups")
 }
 
 model Permission {

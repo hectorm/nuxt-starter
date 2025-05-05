@@ -2,7 +2,6 @@
 import type { ComponentPublicInstance } from "vue";
 import { useInfiniteScroll } from "@vueuse/core";
 import { useNuxtApp } from "nuxt/app";
-import { storeToRefs } from "pinia";
 import { computed, ref, shallowRef, useTemplateRef, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -19,31 +18,27 @@ import USelectMenu from "@nuxt/ui/runtime/components/SelectMenu.vue";
 import UTable from "@nuxt/ui/runtime/components/Table.vue";
 
 import type { RouterInputs, RouterOutputs } from "~/types/trpc";
-import { useUserStore } from "~/stores/user";
 
+import LazyDeleteModal from "~/components/groups/DeleteModal.vue";
+import LazyUpsertModal from "~/components/groups/UpsertModal.vue";
 import SearchMenu from "~/components/SearchMenu.vue";
-import LazyDeleteModal from "~/components/users/DeleteModal.vue";
-import LazyUpsertModal from "~/components/users/UpsertModal.vue";
 
-type SearchInput = NonNullable<Exclude<RouterInputs["user"]["search"], void>>;
-type SearchOutput = RouterOutputs["user"]["search"];
+type SearchInput = NonNullable<Exclude<RouterInputs["group"]["search"], void>>;
+type SearchOutput = RouterOutputs["group"]["search"];
 type RoleListOutput = RouterOutputs["role"]["list"];
 
-type User = SearchOutput["users"][number];
+type Group = SearchOutput["groups"][number];
 
 const i18n = useI18n();
 
 const overlay = useOverlay();
 const toast = useToast();
 
-const userStore = useUserStore();
-const { user: me } = storeToRefs(userStore);
-
 const { $client } = useNuxtApp();
 
-const query = ref<SearchInput>({ limit: 100, orderBy: "username", order: "asc" });
-const result = shallowRef<SearchOutput>(await $client.user.search.query(query.value));
-const users = shallowRef<User[]>(result.value.users);
+const query = ref<SearchInput>({ limit: 100, orderBy: "name", order: "asc" });
+const result = shallowRef<SearchOutput>(await $client.group.search.query(query.value));
+const groups = shallowRef<Group[]>(result.value.groups);
 const roles = shallowRef<RoleListOutput>(await $client.role.list.query());
 const loading = ref<boolean>(false);
 
@@ -55,11 +50,11 @@ const doSearch = async (reset = false) => {
     loading.value = true;
     if (reset) {
       if (table.value) table.value.$el.scrollTop = 0;
-      result.value = await $client.user.search.query({ ...query.value, cursor: undefined });
-      users.value = result.value.users;
+      result.value = await $client.group.search.query({ ...query.value, cursor: undefined });
+      groups.value = result.value.groups;
     } else {
-      result.value = await $client.user.search.query({ ...query.value, cursor: result.value.nextCursor });
-      users.value = users.value.concat(result.value.users);
+      result.value = await $client.group.search.query({ ...query.value, cursor: result.value.nextCursor });
+      groups.value = groups.value.concat(result.value.groups);
     }
   } finally {
     loading.value = false;
@@ -68,10 +63,10 @@ const doSearch = async (reset = false) => {
 
 const table = useTemplateRef<ComponentPublicInstance>("table");
 
-const columns = computed<TableColumn<User>[]>(() => [
+const columns = computed<TableColumn<Group>[]>(() => [
   {
-    id: "username",
-    accessorKey: "username",
+    id: "name",
+    accessorKey: "name",
     meta: {
       sortable: true,
       filterable: true,
@@ -79,20 +74,9 @@ const columns = computed<TableColumn<User>[]>(() => [
     },
   },
   {
-    id: "fullname",
-    accessorKey: "fullname",
+    id: "description",
+    accessorKey: "description",
     meta: {
-      sortable: true,
-      filterable: true,
-      class: { th: "w-0 min-w-75", td: "w-0 max-w-150 truncate" },
-    },
-  },
-  {
-    id: "email",
-    accessorKey: "email",
-    meta: {
-      sortable: true,
-      filterable: true,
       class: { th: "w-0 min-w-75", td: "w-0 max-w-150 truncate" },
     },
   },
@@ -109,21 +93,6 @@ const columns = computed<TableColumn<User>[]>(() => [
     },
   },
   {
-    id: "groups",
-    accessorKey: "groups",
-    accessorFn: (row) => row.groups.map(({ group }) => group.name),
-    meta: {
-      filterable: true,
-      select: true,
-      multiple: true,
-      searchFn: async (search: string) => {
-        const result = await $client.group.search.query({ search });
-        return result.groups.map((group) => group.name);
-      },
-      class: { th: "w-0 min-w-50", td: "w-0" },
-    },
-  },
-  {
     id: "action",
     meta: {
       class: { th: "w-0 min-w-15", td: "w-0 px-0 text-center bg-clip-content" },
@@ -136,80 +105,98 @@ const columnPinning = {
   right: ["action"],
 };
 
-const hasOrder = (column: TableColumn<User>) => {
+const hasOrder = (column: TableColumn<Group>) => {
   return query.value.orderBy === column.id && !!query.value.order;
 };
 
-const setOrder = (column: TableColumn<User>, order: "asc" | "desc" | undefined) => {
+const setOrder = (column: TableColumn<Group>, order: "asc" | "desc" | undefined) => {
   query.value.orderBy = column.id as SearchInput["orderBy"];
   query.value.order = order;
   doSearch(true);
 };
 
-const hasFilter = (column: TableColumn<User>) => {
+const hasFilter = (column: TableColumn<Group>) => {
   return query.value.searchBy === column.id && query.value.search && query.value.search.length > 0;
 };
 
-const setFilter = (column: TableColumn<User>, value: string | string[]) => {
+const setFilter = (column: TableColumn<Group>, value: string | string[]) => {
   query.value.searchBy = column.id as SearchInput["searchBy"];
   query.value.search = value;
   doSearch(true);
 };
 
-const getDropdownActions = (user: User): DropdownMenuItem[] => {
+const getDropdownActions = (group: Group): DropdownMenuItem[] => {
   return [
     {
-      label: i18n.t("pages.settings.users.table.actions.update.label"),
+      label: i18n.t("pages.settings.groups.table.actions.update.label"),
       icon: "i-lucide-edit",
       color: "neutral",
-      onSelect: () => openUpdateModal(user),
+      onSelect: () => openUpdateModal(group),
     },
     {
-      label: i18n.t("pages.settings.users.table.actions.delete.label"),
+      label: i18n.t("pages.settings.groups.table.actions.delete.label"),
       icon: "i-lucide-trash-2",
       color: "error",
-      disabled: user.id === me.value?.id,
-      onSelect: () => openDeleteModal(user),
+      onSelect: () => openDeleteModal(group),
     },
   ];
 };
 
-const openUpdateModal = async (user: User) => {
-  const instance = upsertModal.open({ id: user.id });
+const openCreateModal = async () => {
+  const instance = upsertModal.open({ id: null });
   const result = await instance.result;
-  if (result.user) {
-    const i = users.value.findIndex((user) => user.id === result.user!.id);
-    if (i >= 0) users.value = users.value.toSpliced(i, 1, result.user);
+  if (result.group) {
+    groups.value = groups.value.toSpliced(0, 0, result.group);
     toast.add({
       color: "success",
-      title: i18n.t("pages.settings.users.table.actions.update.success.title"),
-      description: i18n.t("pages.settings.users.table.actions.update.success.description"),
+      title: i18n.t("pages.settings.groups.table.actions.create.success.title"),
+      description: i18n.t("pages.settings.groups.table.actions.create.success.description"),
     });
   } else if (result.error) {
     toast.add({
       color: "error",
-      title: i18n.t("pages.settings.users.table.actions.update.error.title"),
-      description: i18n.t("pages.settings.users.table.actions.update.error.description"),
+      title: i18n.t("pages.settings.groups.table.actions.create.error.title"),
+      description: i18n.t("pages.settings.groups.table.actions.create.error.description"),
     });
   }
 };
 
-const openDeleteModal = async (user: User) => {
-  const instance = deleteModal.open({ id: user.id });
+const openUpdateModal = async (group: Group) => {
+  const instance = upsertModal.open({ id: group.id });
   const result = await instance.result;
-  if (result.user) {
-    const i = users.value.findIndex((user) => user.id === result.user!.id);
-    if (i >= 0) users.value = users.value.toSpliced(i, 1);
+  if (result.group) {
+    const i = groups.value.findIndex((group) => group.id === result.group!.id);
+    if (i >= 0) groups.value = groups.value.toSpliced(i, 1, result.group);
     toast.add({
       color: "success",
-      title: i18n.t("pages.settings.users.table.actions.delete.success.title"),
-      description: i18n.t("pages.settings.users.table.actions.delete.success.description"),
+      title: i18n.t("pages.settings.groups.table.actions.update.success.title"),
+      description: i18n.t("pages.settings.groups.table.actions.update.success.description"),
     });
   } else if (result.error) {
     toast.add({
       color: "error",
-      title: i18n.t("pages.settings.users.table.actions.delete.error.title"),
-      description: i18n.t("pages.settings.users.table.actions.delete.error.description"),
+      title: i18n.t("pages.settings.groups.table.actions.update.error.title"),
+      description: i18n.t("pages.settings.groups.table.actions.update.error.description"),
+    });
+  }
+};
+
+const openDeleteModal = async (group: Group) => {
+  const instance = deleteModal.open({ id: group.id });
+  const result = await instance.result;
+  if (result.group) {
+    const i = groups.value.findIndex((group) => group.id === result.group!.id);
+    if (i >= 0) groups.value = groups.value.toSpliced(i, 1);
+    toast.add({
+      color: "success",
+      title: i18n.t("pages.settings.groups.table.actions.delete.success.title"),
+      description: i18n.t("pages.settings.groups.table.actions.delete.success.description"),
+    });
+  } else if (result.error) {
+    toast.add({
+      color: "error",
+      title: i18n.t("pages.settings.groups.table.actions.delete.error.title"),
+      description: i18n.t("pages.settings.groups.table.actions.delete.error.description"),
     });
   }
 };
@@ -230,8 +217,8 @@ watch(i18n.locale, () => {
 });
 
 definePageMeta({
-  title: "pages.settings.users.title",
-  description: "pages.settings.users.description",
+  title: "pages.settings.groups.title",
+  description: "pages.settings.groups.description",
   middleware: ["auth", "can"],
   permissions: ["manage"],
 });
@@ -243,17 +230,25 @@ definePageMeta({
     :key="tableKey"
     :columns="columns"
     :column-pinning="columnPinning"
-    :data="users"
+    :data="groups"
     :loading="loading"
     sticky
   >
     <template v-for="{ id } in columns" #[`${id}-header`]="{ column }" :key="id">
-      <template v-if="id === 'action'">&nbsp;</template>
-      <UButtonGroup v-else :aria-label="$t(`pages.settings.users.table.${id}`)" class="-mx-2.5 flex w-full flex-row">
+      <template v-if="id === 'action'">
+        <UButton
+          :aria-label="$t('pages.settings.groups.table.actions.create.label')"
+          color="neutral"
+          variant="ghost"
+          icon="i-lucide-plus"
+          @click="() => openCreateModal()"
+        />
+      </template>
+      <UButtonGroup v-else :aria-label="$t(`pages.settings.groups.table.${id}`)" class="-mx-2.5 flex w-full flex-row">
         <UButton
           v-if="(column.columnDef.meta as any).sortable"
-          :label="$t(`pages.settings.users.table.${id}`)"
-          :aria-label="$t('pages.settings.users.table.sort')"
+          :label="$t(`pages.settings.groups.table.${id}`)"
+          :aria-label="$t('pages.settings.groups.table.sort')"
           color="neutral"
           variant="ghost"
           class="flex-1"
@@ -268,14 +263,14 @@ definePageMeta({
         />
         <UButton
           v-else
-          :label="$t(`pages.settings.users.table.${id}`)"
+          :label="$t(`pages.settings.groups.table.${id}`)"
           color="neutral"
           variant="ghost"
           class="flex-1 cursor-default"
         />
         <UPopover v-if="(column.columnDef.meta as any).filterable">
           <UButton
-            :aria-label="$t('pages.settings.users.table.filter')"
+            :aria-label="$t('pages.settings.groups.table.filter')"
             color="neutral"
             variant="ghost"
             :icon="hasFilter(column) ? 'i-lucide-list-filter-plus' : 'i-lucide-list-filter'"
@@ -285,7 +280,7 @@ definePageMeta({
               <template v-if="(column.columnDef.meta as any).searchFn">
                 <SearchMenu
                   :model-value="hasFilter(column) && Array.isArray(query.search) ? query.search : []"
-                  :aria-label="$t('pages.settings.users.table.search')"
+                  :aria-label="$t('pages.settings.groups.table.search')"
                   color="neutral"
                   variant="ghost"
                   icon="i-lucide-search"
@@ -298,7 +293,7 @@ definePageMeta({
               <template v-else>
                 <USelectMenu
                   :model-value="hasFilter(column) && Array.isArray(query.search) ? query.search : []"
-                  :aria-label="$t('pages.settings.users.table.search')"
+                  :aria-label="$t('pages.settings.groups.table.search')"
                   color="neutral"
                   variant="ghost"
                   icon="i-lucide-search"
@@ -313,7 +308,7 @@ definePageMeta({
             <template v-else>
               <UInput
                 :model-value="hasFilter(column) && !Array.isArray(query.search) ? query.search : ''"
-                :aria-label="$t('pages.settings.users.table.search')"
+                :aria-label="$t('pages.settings.groups.table.search')"
                 color="neutral"
                 variant="ghost"
                 icon="i-lucide-search"
@@ -329,7 +324,7 @@ definePageMeta({
       <template v-if="id === 'action'">
         <UDropdownMenu :items="getDropdownActions((row as any).original)">
           <UButton
-            :aria-label="$t('pages.settings.users.table.actions.title')"
+            :aria-label="$t('pages.settings.groups.table.actions.title')"
             color="neutral"
             variant="ghost"
             icon="i-lucide-ellipsis-vertical"

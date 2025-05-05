@@ -5,7 +5,7 @@ import withNuxt from "./.nuxt/eslint.config.mjs";
 
 export default withNuxt(eslintConfigPrettier, {
   languageOptions: {
-    ecmaVersion: 2024,
+    ecmaVersion: 2025,
     sourceType: "module",
     globals: {
       ...globals.browser,

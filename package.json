@@ -93,6 +93,7 @@
     "globals": "~16.0.0",
     "npm-run-all2": "~8.0.0",
     "prettier": "~3.5.3",
+    "prettier-plugin-tailwindcss": "~0.6.11",
     "tsx": "~4.19.4",
     "typescript": "~5.8.3",
     "vue-component-type-helpers": "~2.2.10",

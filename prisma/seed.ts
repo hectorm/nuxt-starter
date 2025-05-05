@@ -36,34 +36,42 @@ async function createRolesAndPermissions(prisma: PrismaClient) {
   for (const pair of Object.entries(RolesPermissions)) {
     const [role, permissions] = pair as [string, string[]];
 
-    const existingPermissions = (
-      await prisma.permissionsOnRoles.findMany({
-        where: { role: { name: role } },
-        select: { permission: { select: { name: true } } },
-      })
-    ).map(({ permission }) => permission.name);
+    const [oldPermissions, newPermissions] = await Promise.all([
+      prisma.permission.findMany({
+        where: { roles: { some: { role: { name: role } } } },
+        select: { id: true, name: true },
+      }),
+      prisma.permission.findMany({
+        where: { name: { in: permissions } },
+        select: { id: true, name: true },
+      }),
+    ]);
 
-    const permissionsToDelete = existingPermissions.filter((name) => !permissions.includes(name));
-    if (permissionsToDelete.length > 0) {
-      logger.debug(`Deleting permissions from role ${role}: ${permissionsToDelete.join(", ")}`);
-      await prisma.permissionsOnRoles.deleteMany({
-        where: {
-          permission: { name: { in: permissionsToDelete } },
-          role: { name: role },
-        },
-      });
+    const oldPermissionIds = new Set(oldPermissions.map((permission) => permission.id));
+    const newPermissionIds = new Set(newPermissions.map((permission) => permission.id));
+
+    const permissionsToRemove = oldPermissions.filter((permission) => !newPermissionIds.has(permission.id));
+    const permissionsToAdd = newPermissions.filter((permission) => !oldPermissionIds.has(permission.id));
+
+    if (logger.isLevelEnabled("debug")) {
+      if (permissionsToRemove.length > 0) {
+        const permissionsToRemoveNames = permissionsToRemove.map(({ name }) => name);
+        logger.debug(`Removing permissions from role ${role}: ${permissionsToRemoveNames.join(", ")}`);
+      }
+      if (permissionsToAdd.length > 0) {
+        const permissionsToAddNames = permissionsToAdd.map(({ name }) => name);
+        logger.debug(`Adding permissions to role ${role}: ${permissionsToAddNames.join(", ")}`);
+      }
     }
 
-    const permissionsToCreate = permissions.filter((name) => !existingPermissions.includes(name));
-    if (permissionsToCreate.length > 0) {
-      logger.debug(`Adding permissions to role ${role}: ${permissionsToCreate.join(", ")}`);
+    if (permissionsToRemove.length > 0 || permissionsToAdd.length > 0) {
       await prisma.role.update({
         where: { name: role },
+        select: { id: true },
         data: {
           permissions: {
-            create: permissions.map((name) => ({
-              permission: { connect: { name } },
-            })),
+            deleteMany: permissionsToRemove.map(({ id }) => ({ permissionId: id })),
+            createMany: { data: permissionsToAdd.map(({ id }) => ({ permissionId: id })) },
           },
         },
       });
@@ -84,9 +92,18 @@ async function createSampleData(prisma: PrismaClient) {
   const users: Omit<Prisma.UserCreateInput, "seed">[] = [
     {
       id: uuid(0),
-      username: "admin",
-      fullname: "Admin User",
-      email: "admin@localhost",
+      username: "alice",
+      fullname: "Alice Bennett",
+      email: "alice@localhost",
+      roles: {
+        create: [{ role: { connect: { name: Roles.Admin } } }],
+      },
+    },
+    {
+      id: uuid(0),
+      username: "bob",
+      fullname: "Bob Collins",
+      email: "bob@localhost",
       roles: {
         create: [{ role: { connect: { name: Roles.Admin } } }],
       },

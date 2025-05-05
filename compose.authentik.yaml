@@ -90,7 +90,8 @@ services:
       NUXT_AUTH_OIDC_END_SESSION_ENDPOINT: "https://idp.localhost/application/o/app/end-session/"
       NUXT_AUTH_OIDC_JWKS_URI: "http://authentik-server:9000/application/o/app/jwks/"
       NUXT_AUTH_OIDC_SCOPES: "openid email profile"
-      NUXT_AUTH_OIDC_ROLES_ATTRIBUTE_PATH: "type(groups) == 'array' && (contains(groups[*], 'admin') && 'admin' || 'user')"
+      NUXT_AUTH_OIDC_ROLES_ATTRIBUTE_PATH: "type(groups) == 'array' && (contains(groups, 'admin') && 'admin' || 'user')"
+      NUXT_AUTH_OIDC_GROUPS_ATTRIBUTE_PATH: ""
       NUXT_AUTH_OIDC_ENFORCE_HTTPS: "false"
       NUXT_LOG_LEVEL: "${NUXT_LOG_LEVEL:-debug}"
     depends_on:
@@ -141,7 +142,7 @@ services:
     command: ["server"]
     healthcheck:
       test: ["CMD", "ak", "healthcheck"]
-      start_period: "60s"
+      start_period: "120s"
       start_interval: "5s"
       interval: "10s"
       timeout: "10s"
@@ -328,60 +329,74 @@ configs:
           model: "authentik_core.group"
           attrs:
             name: "admin"
-        - id: "user-group"
-          identifiers:
-            name: "user"
-          model: "authentik_core.group"
-          attrs:
-            name: "user"
         # Users
-        - id: "admin-user"
-          identifiers:
-            username: "admin"
-          model: "authentik_core.user"
-          attrs:
-            username: "admin"
-            name: "Admin User"
-            email: "admin@localhost"
-            password: "password"
-            is_active: true
-            path: "users"
-            groups:
-              - !Find [authentik_core.group, [name, admin]]
         - id: "alice-user"
           identifiers:
             username: "alice"
           model: "authentik_core.user"
           attrs:
             username: "alice"
-            name: "Alice Williams"
+            name: "Alice Bennett"
             email: "alice@localhost"
             password: "password"
             is_active: true
             path: "users"
             groups:
-              - !Find [authentik_core.group, [name, user]]
+              - !Find [authentik_core.group, [name, admin]]
         - id: "bob-user"
           identifiers:
             username: "bob"
           model: "authentik_core.user"
           attrs:
             username: "bob"
-            name: "Bob Roberts"
+            name: "Bob Collins"
             email: "bob@localhost"
             password: "password"
             is_active: true
             path: "users"
             groups:
-              - !Find [authentik_core.group, [name, user]]
+              - !Find [authentik_core.group, [name, admin]]
         - id: "carol-user"
           identifiers:
             username: "carol"
           model: "authentik_core.user"
           attrs:
             username: "carol"
-            name: "Carol Hampton"
+            name: "Carol Davis"
             email: "carol@localhost"
+            password: "password"
+            is_active: true
+            path: "users"
+        - id: "dan-user"
+          identifiers:
+            username: "dan"
+          model: "authentik_core.user"
+          attrs:
+            username: "dan"
+            name: "Dan Edwards"
+            email: "dan@localhost"
+            password: "password"
+            is_active: true
+            path: "users"
+        - id: "erin-user"
+          identifiers:
+            username: "erin"
+          model: "authentik_core.user"
+          attrs:
+            username: "erin"
+            name: "Erin Fisher"
+            email: "erin@localhost"
+            password: "password"
+            is_active: true
+            path: "users"
+        - id: "frank-user"
+          identifiers:
+            username: "frank"
+          model: "authentik_core.user"
+          attrs:
+            username: "frank"
+            name: "Frank Graham"
+            email: "frank@localhost"
             password: "password"
             is_active: true
             path: "users"
