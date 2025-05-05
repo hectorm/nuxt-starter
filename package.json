@@ -44,7 +44,7 @@
     "seed": "tsx ./prisma/seed.ts"
   },
   "dependencies": {
-    "@iconify-json/lucide": "~1.2.39",
+    "@iconify-json/lucide": "~1.2.40",
     "@iconify-json/simple-icons": "~1.2.33",
     "@nuxt/devtools": "~2.4.0",
     "@nuxt/fonts": "~0.11.2",
