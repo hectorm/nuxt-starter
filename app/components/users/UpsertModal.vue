@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useNuxtApp } from "nuxt/app";
 import { reactive, ref } from "vue";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import type { FormSubmitEvent } from "@nuxt/ui";
 import UButton from "@nuxt/ui/runtime/components/Button.vue";
@@ -33,7 +33,7 @@ const user = ref<UserReadOutput | null>(props.id ? await $client.user.read.query
 const roles = ref<RoleListOutput>(await $client.role.list.query());
 
 const schema = z.object({
-  id: z.string().uuid().optional(),
+  id: z.uuidv7().optional(),
   username: z.string().min(1),
   fullname: z.string().min(1),
   email: z.string().regex(/.+@.+/).min(1),

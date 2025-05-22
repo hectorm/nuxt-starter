@@ -1,5 +1,5 @@
 import { createError, defineEventHandler, getValidatedQuery, sendRedirect, setCookie } from "h3";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { logger } from "~~/server/utils/logger";
 

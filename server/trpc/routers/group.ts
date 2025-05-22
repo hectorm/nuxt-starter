@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { protectedProcedure, router } from "~~/server/trpc/trpc";
 
@@ -7,7 +7,7 @@ export const groupRouter = router({
   read: protectedProcedure
     .input(
       z.object({
-        id: z.string().uuid(),
+        id: z.uuidv7(),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -61,7 +61,7 @@ export const groupRouter = router({
   update: protectedProcedure
     .input(
       z.object({
-        id: z.string().uuid(),
+        id: z.uuidv7(),
         name: z.string().min(1).optional(),
         description: z.string().nullish(),
         roles: z.array(z.string().min(1)).optional(),
@@ -113,7 +113,7 @@ export const groupRouter = router({
   delete: protectedProcedure
     .input(
       z.object({
-        id: z.string().uuid(),
+        id: z.uuidv7(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -131,7 +131,7 @@ export const groupRouter = router({
     .input(
       z
         .object({
-          cursor: z.string().uuid().optional(),
+          cursor: z.uuidv7().optional(),
           limit: z.number().min(1).max(100).optional(),
           searchBy: z.enum(["name", "roles"]).optional(),
           search: z.union([z.string(), z.array(z.string())]).optional(),
