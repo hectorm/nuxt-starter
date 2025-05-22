@@ -2,6 +2,7 @@
 import { storeToRefs } from "pinia";
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
+import { z } from "zod/v4";
 
 import { useColorMode } from "#imports";
 
@@ -52,6 +53,7 @@ const items = computed<DropdownMenuItem[]>(() => {
       onSelect(e: Event) {
         e.preventDefault();
         i18n.setLocale(locale.code);
+        z.config((locale.code in z.locales ? z.locales[locale.code] : z.locales.en)());
       },
     })),
   });
