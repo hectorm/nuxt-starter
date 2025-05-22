@@ -34,11 +34,11 @@ const roles = ref<RoleListOutput>(await $client.role.list.query());
 
 const schema = z.object({
   id: z.uuidv7().optional(),
-  username: z.string().min(1),
-  fullname: z.string().min(1),
-  email: z.string().regex(/.+@.+/).min(1),
-  roles: z.array(z.string().min(1)).optional(),
-  groups: z.array(z.string().min(1)).optional(),
+  username: z.string().nonempty(),
+  fullname: z.string().nonempty(),
+  email: z.string().includes("@"),
+  roles: z.array(z.string().nonempty()).optional(),
+  groups: z.array(z.string().nonempty()).optional(),
 }) satisfies z.ZodType<UserCreateOrUpdateInput>;
 
 const state = reactive<Partial<UserCreateOrUpdateInput>>({

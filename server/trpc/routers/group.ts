@@ -24,9 +24,9 @@ export const groupRouter = router({
   create: protectedProcedure
     .input(
       z.object({
-        name: z.string().min(1),
+        name: z.string().nonempty(),
         description: z.string().nullish(),
-        roles: z.array(z.string().min(1)).optional(),
+        roles: z.array(z.string().nonempty()).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -62,9 +62,9 @@ export const groupRouter = router({
     .input(
       z.object({
         id: z.uuidv7(),
-        name: z.string().min(1).optional(),
+        name: z.string().nonempty().optional(),
         description: z.string().nullish(),
-        roles: z.array(z.string().min(1)).optional(),
+        roles: z.array(z.string().nonempty()).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {

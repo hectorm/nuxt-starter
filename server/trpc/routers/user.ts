@@ -52,11 +52,11 @@ export const userRouter = router({
   create: protectedProcedure
     .input(
       z.object({
-        username: z.string().min(1),
-        fullname: z.string().min(1),
-        email: z.string().regex(/.+@.+/).min(1),
-        roles: z.array(z.string().min(1)).optional(),
-        groups: z.array(z.string().min(1)).optional(),
+        username: z.string().nonempty(),
+        fullname: z.string().nonempty(),
+        email: z.string().includes("@"),
+        roles: z.array(z.string().nonempty()).optional(),
+        groups: z.array(z.string().nonempty()).optional(),
       }),
     )
     .mutation(() => {
@@ -66,11 +66,11 @@ export const userRouter = router({
     .input(
       z.object({
         id: z.uuidv7(),
-        username: z.string().min(1).optional(),
-        fullname: z.string().min(1).optional(),
-        email: z.string().regex(/.+@.+/).min(1).optional(),
-        roles: z.array(z.string().min(1)).optional(),
-        groups: z.array(z.string().min(1)).optional(),
+        username: z.string().nonempty().optional(),
+        fullname: z.string().nonempty().optional(),
+        email: z.string().includes("@").optional(),
+        roles: z.array(z.string().nonempty()).optional(),
+        groups: z.array(z.string().nonempty()).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {

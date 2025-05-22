@@ -33,9 +33,9 @@ const roles = ref<RoleListOutput>(await $client.role.list.query());
 
 const schema = z.object({
   id: z.uuidv7().optional(),
-  name: z.string().min(1),
+  name: z.string().nonempty(),
   description: z.string().nullish(),
-  roles: z.array(z.string().min(1)).optional(),
+  roles: z.array(z.string().nonempty()).optional(),
 }) satisfies z.ZodType<GroupCreateOrUpdateInput>;
 
 const state = reactive<Partial<GroupCreateOrUpdateInput>>({
