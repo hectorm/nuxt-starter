@@ -2,7 +2,7 @@
 ## "build" stage
 ##################################################
 
-FROM docker.io/node:22.16.0-bookworm@sha256:f466376b5f5ca8327da5914fddbcb5eee21c1c8482bed548a5ee84750d0b1b69 AS build
+FROM docker.io/node:22.16.0-bookworm@sha256:0b5b940c21ab03353de9042f9166c75bcfc53c4cd0508c7fd88576646adbf875 AS build
 
 ENV PNPM_HOME=/pnpm
 ENV PATH=${PNPM_HOME}:${PATH}
