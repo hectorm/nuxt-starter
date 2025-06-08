@@ -21,7 +21,7 @@ import type { RouterInputs, RouterOutputs } from "~/types/trpc";
 
 import LazyDeleteModal from "~/components/groups/DeleteModal.vue";
 import LazyUpsertModal from "~/components/groups/UpsertModal.vue";
-import SearchMenu from "~/components/SearchMenu.vue";
+import SearchMenu from "~/components/ui/SearchMenu.vue";
 
 type SearchInput = NonNullable<Exclude<RouterInputs["group"]["search"], void>>;
 type SearchOutput = RouterOutputs["group"]["search"];

@@ -13,7 +13,7 @@ import USelectMenu from "@nuxt/ui/runtime/components/SelectMenu.vue";
 
 import type { RouterInputs, RouterOutputs } from "~/types/trpc";
 
-import SearchMenu from "~/components/SearchMenu.vue";
+import SearchMenu from "~/components/ui/SearchMenu.vue";
 
 type UserReadOutput = RouterOutputs["user"]["read"];
 type UserCreateInput = RouterInputs["user"]["create"];

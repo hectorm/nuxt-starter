@@ -10,8 +10,8 @@ import USlideover from "@nuxt/ui/runtime/components/Slideover.vue";
 
 import { sidebarKey } from "~/utils/symbols";
 
-import AppLogo from "~/components/AppLogo.vue";
-import UserMenu from "~/components/UserMenu.vue";
+import AppLogo from "~/components/ui/AppLogo.vue";
+import UserMenu from "~/components/ui/UserMenu.vue";
 
 const i18n = useI18n();
 

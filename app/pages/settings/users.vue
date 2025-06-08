@@ -21,7 +21,7 @@ import UTable from "@nuxt/ui/runtime/components/Table.vue";
 import type { RouterInputs, RouterOutputs } from "~/types/trpc";
 import { useUserStore } from "~/stores/user";
 
-import SearchMenu from "~/components/SearchMenu.vue";
+import SearchMenu from "~/components/ui/SearchMenu.vue";
 import LazyDeleteModal from "~/components/users/DeleteModal.vue";
 import LazyUpsertModal from "~/components/users/UpsertModal.vue";
 
