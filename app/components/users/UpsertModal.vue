@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useNuxtApp } from "nuxt/app";
 import { reactive, ref } from "vue";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import type { FormSubmitEvent } from "@nuxt/ui";
 import UButton from "@nuxt/ui/runtime/components/Button.vue";
@@ -13,7 +13,7 @@ import USelectMenu from "@nuxt/ui/runtime/components/SelectMenu.vue";
 
 import type { RouterInputs, RouterOutputs } from "~/types/trpc";
 
-import SearchMenu from "~/components/SearchMenu.vue";
+import SearchMenu from "~/components/ui/SearchMenu.vue";
 
 type UserReadOutput = RouterOutputs["user"]["read"];
 type UserCreateInput = RouterInputs["user"]["create"];
@@ -33,12 +33,12 @@ const user = ref<UserReadOutput | null>(props.id ? await $client.user.read.query
 const roles = ref<RoleListOutput>(await $client.role.list.query());
 
 const schema = z.object({
-  id: z.string().uuid().optional(),
-  username: z.string().min(1),
-  fullname: z.string().min(1),
-  email: z.string().regex(/.+@.+/).min(1),
-  roles: z.array(z.string().min(1)).optional(),
-  groups: z.array(z.string().min(1)).optional(),
+  id: z.uuidv7().optional(),
+  username: z.string().nonempty(),
+  fullname: z.string().nonempty(),
+  email: z.string().includes("@"),
+  roles: z.array(z.string().nonempty()).optional(),
+  groups: z.array(z.string().nonempty()).optional(),
 }) satisfies z.ZodType<UserCreateOrUpdateInput>;
 
 const state = reactive<Partial<UserCreateOrUpdateInput>>({

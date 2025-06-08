@@ -2,9 +2,9 @@
 name: "app"
 
 # https://hub.docker.com/_/traefik
-x-traefik-image: &traefik-image "docker.io/traefik:3.3"
+x-traefik-image: &traefik-image "docker.io/traefik:3.4"
 # https://hub.docker.com/r/dexidp/dex
-x-dex-image: &dex-image "docker.io/dexidp/dex:v2.42.1"
+x-dex-image: &dex-image "docker.io/dexidp/dex:v2.43.1"
 # https://hub.docker.com/_/postgres
 x-postgres-image: &postgres-image "docker.io/postgres:17-bookworm"
 
@@ -151,10 +151,19 @@ services:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "password"
     command: >-
-      -c max_connections=500
-      -c shared_buffers=512MB
-      -c max_wal_size=2048MB
-      -c wal_compression=on
+      -c max_connections=200
+      -c shared_buffers=1024MB
+      -c effective_cache_size=3072MB
+      -c maintenance_work_mem=256MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c work_mem=5041kB
+      -c huge_pages=off
+      -c min_wal_size=1024MB
+      -c max_wal_size=4096MB
     healthcheck:
       test: ["CMD", "pg_isready", "-qU", "postgres"]
       start_period: "60s"

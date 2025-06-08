@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { protectedProcedure, publicProcedure, router } from "~~/server/trpc/trpc";
 
@@ -33,7 +33,7 @@ export const userRouter = router({
   read: protectedProcedure
     .input(
       z.object({
-        id: z.string().uuid(),
+        id: z.uuidv7(),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -52,11 +52,11 @@ export const userRouter = router({
   create: protectedProcedure
     .input(
       z.object({
-        username: z.string().min(1),
-        fullname: z.string().min(1),
-        email: z.string().regex(/.+@.+/).min(1),
-        roles: z.array(z.string().min(1)).optional(),
-        groups: z.array(z.string().min(1)).optional(),
+        username: z.string().nonempty(),
+        fullname: z.string().nonempty(),
+        email: z.string().includes("@"),
+        roles: z.array(z.string().nonempty()).optional(),
+        groups: z.array(z.string().nonempty()).optional(),
       }),
     )
     .mutation(() => {
@@ -65,12 +65,12 @@ export const userRouter = router({
   update: protectedProcedure
     .input(
       z.object({
-        id: z.string().uuid(),
-        username: z.string().min(1).optional(),
-        fullname: z.string().min(1).optional(),
-        email: z.string().regex(/.+@.+/).min(1).optional(),
-        roles: z.array(z.string().min(1)).optional(),
-        groups: z.array(z.string().min(1)).optional(),
+        id: z.uuidv7(),
+        username: z.string().nonempty().optional(),
+        fullname: z.string().nonempty().optional(),
+        email: z.string().includes("@").optional(),
+        roles: z.array(z.string().nonempty()).optional(),
+        groups: z.array(z.string().nonempty()).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -146,7 +146,7 @@ export const userRouter = router({
   delete: protectedProcedure
     .input(
       z.object({
-        id: z.string().uuid(),
+        id: z.uuidv7(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -166,7 +166,7 @@ export const userRouter = router({
     .input(
       z
         .object({
-          cursor: z.string().uuid().optional(),
+          cursor: z.uuidv7().optional(),
           limit: z.number().min(1).max(100).optional(),
           searchBy: z.enum(["username", "fullname", "email", "roles", "groups"]).optional(),
           search: z.union([z.string(), z.array(z.string())]).optional(),

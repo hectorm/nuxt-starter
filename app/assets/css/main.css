@@ -1,6 +1,14 @@
 @import "tailwindcss" theme(static);
 @import "@nuxt/ui";
 
+html.light {
+  @import "github-markdown-css/github-markdown-light.css";
+}
+
+html.dark {
+  @import "github-markdown-css/github-markdown-dark.css";
+}
+
 @theme static {
   --font-sans: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
@@ -8,6 +16,22 @@
 @layer base {
   button:not(:disabled),
   [role="button"]:not(:disabled) {
-    cursor: pointer;
+    @apply cursor-pointer;
+  }
+}
+
+.markdown-body {
+  @apply bg-transparent! font-sans!;
+
+  ul,
+  ol {
+    @apply list-[revert]!;
+  }
+
+  th,
+  li {
+    & > p {
+      @apply m-0!;
+    }
   }
 }

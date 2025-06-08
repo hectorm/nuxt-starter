@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useNuxtApp } from "nuxt/app";
 import { reactive, ref } from "vue";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import type { FormSubmitEvent } from "@nuxt/ui";
 import UButton from "@nuxt/ui/runtime/components/Button.vue";
@@ -32,10 +32,10 @@ const group = ref<GroupReadOutput | null>(props.id ? await $client.group.read.qu
 const roles = ref<RoleListOutput>(await $client.role.list.query());
 
 const schema = z.object({
-  id: z.string().uuid().optional(),
-  name: z.string().min(1),
+  id: z.uuidv7().optional(),
+  name: z.string().nonempty(),
   description: z.string().nullish(),
-  roles: z.array(z.string().min(1)).optional(),
+  roles: z.array(z.string().nonempty()).optional(),
 }) satisfies z.ZodType<GroupCreateOrUpdateInput>;
 
 const state = reactive<Partial<GroupCreateOrUpdateInput>>({

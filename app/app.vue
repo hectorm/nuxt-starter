@@ -4,6 +4,7 @@ import { useHeadSafe, useRequestURL, useSeoMeta } from "nuxt/app";
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
+import { z } from "zod/v4";
 
 import { useColorMode } from "#imports";
 
@@ -16,6 +17,8 @@ const route = useRoute();
 
 const i18n = useI18n();
 const locale = computed(() => locales[i18n.locale.value]);
+
+z.config((i18n.locale.value in z.locales ? z.locales[i18n.locale.value] : z.locales.en)());
 
 const colorMode = useColorMode();
 const themeColor = computed(() => (colorMode.value === "dark" ? "#052f4a" : "#f0f9ff"));
