@@ -44,7 +44,7 @@
     "seed": "tsx ./prisma/seed.ts"
   },
   "dependencies": {
-    "@iconify-json/lucide": "~1.2.47",
+    "@iconify-json/lucide": "~1.2.49",
     "@iconify-json/simple-icons": "~1.2.38",
     "@nuxt/devtools": "~2.5.0",
     "@nuxt/fonts": "~0.11.4",
@@ -82,8 +82,8 @@
     "@tiptap/extension-underline": "~2.14.0",
     "@tiptap/pm": "~2.14.0",
     "@tiptap/vue-3": "~2.14.0",
-    "@trpc/client": "~11.3.1",
-    "@trpc/server": "~11.3.1",
+    "@trpc/client": "~11.4.1",
+    "@trpc/server": "~11.4.1",
     "@vueuse/core": "~13.3.0",
     "@vueuse/nuxt": "~13.3.0",
     "@zenstackhq/runtime": "~2.15.1",
@@ -103,7 +103,7 @@
     "prisma": "~6.9.0",
     "showdown": "~2.1.0",
     "superjson": "~2.2.2",
-    "tailwindcss": "~4.1.8",
+    "tailwindcss": "~4.1.10",
     "trpc-nuxt": "~1.0.5",
     "turndown": "~7.2.0",
     "turndown-plugin-gfm": "~1.0.2",
@@ -111,7 +111,7 @@
     "vue-i18n": "~11.1.5",
     "vue-router": "~4.5.1",
     "zenstack": "~2.15.1",
-    "zod": "~3.25.56"
+    "zod": "~3.25.65"
   },
   "devDependencies": {
     "@ianvs/prettier-plugin-sort-imports": "~4.4.2",
