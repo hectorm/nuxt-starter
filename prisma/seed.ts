@@ -1,11 +1,11 @@
 #!/usr/bin/env tsx
 import type { Logger } from "pino";
-import { Prisma, PrismaClient } from "@prisma/client";
 import pino from "pino";
 
 import { Permissions } from "~/domain/permissions";
 import { Roles } from "~/domain/roles";
 import { RolesPermissions } from "~/domain/roles-permissions";
+import { Prisma, PrismaClient } from "~~/prisma/generated/prisma/client";
 
 const isCLI = import.meta.url.endsWith("seed.ts");
 const env = import.meta.env ?? process.env;

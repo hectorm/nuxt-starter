@@ -1,6 +1,6 @@
-import type { Prisma } from "@prisma/client";
 import { z } from "zod/v4";
 
+import type { Prisma } from "~~/prisma/generated/prisma/client";
 import { protectedProcedure, publicProcedure, router } from "~~/server/trpc/trpc";
 
 export const userRouter = router({

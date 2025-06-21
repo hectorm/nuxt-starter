@@ -1,6 +1,6 @@
-import type { Prisma } from "@prisma/client";
 import { appendHeader, createError, defineEventHandler, getCookie, getRequestURL, sendRedirect } from "h3";
 
+import type { Prisma } from "~~/prisma/generated/prisma/client";
 import { logger } from "~~/server/utils/logger";
 import { prisma } from "~~/server/utils/prisma";
 

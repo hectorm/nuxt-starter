@@ -1,6 +1,6 @@
 import type { H3Event } from "h3";
-import { enhance } from "@zenstackhq/runtime";
 
+import { enhance } from "~~/prisma/generated/zenstack/enhance";
 import { prisma } from "~~/server/utils/prisma";
 
 export const createContext = async (event: H3Event) => {

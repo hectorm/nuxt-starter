@@ -1,5 +1,4 @@
-import { Prisma, PrismaClient } from "@prisma/client";
-
+import { Prisma, PrismaClient } from "~~/prisma/generated/prisma/client";
 import { logger } from "~~/server/utils/logger";
 
 export const prisma: PrismaClient<Prisma.PrismaClientOptions, "query" | "info" | "warn" | "error"> = new PrismaClient({

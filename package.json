@@ -24,7 +24,7 @@
     "format:zenstack": "zenstack format",
     "format:prisma": "prisma format",
     "db:generate": "run-s db:generate:zenstack db:generate:prisma",
-    "db:generate:zenstack": "zenstack generate --offline",
+    "db:generate:zenstack": "zenstack generate --offline --output ./prisma/generated/zenstack/",
     "db:generate:prisma": "prisma generate --no-hints",
     "db:baseline": "prisma migrate diff --from-empty --to-schema-datamodel ./prisma/schema.prisma --script > ./prisma/migrations/0_init/migration.sql",
     "db:reset": "run-s \"db:push --force-reset\" db:seed",

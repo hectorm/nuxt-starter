@@ -1,7 +1,7 @@
 import { Buffer } from "node:buffer";
 
-import type { PrismaClient } from "@prisma/client";
-import { Prisma } from "@prisma/client";
+import type { PrismaClient } from "~~/prisma/generated/prisma/client";
+import { Prisma } from "~~/prisma/generated/prisma/client";
 
 export interface LuciaOptions {
   cookieName: string;
