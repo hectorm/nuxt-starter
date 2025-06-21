@@ -111,27 +111,44 @@ export default defineNuxtConfig({
   },
   hooks: {
     "nitro:build:public-assets": async (nitro) => {
+      const { dir, serverDir } = nitro.options.output;
+
       // Copy bin directory to the output directory
       const binInDir = path.join(__dirname, "bin");
-      const binOutDir = path.join(nitro.options.output.dir, "bin");
+      const binOutDir = path.join(dir, "bin");
       await fs.cp(binInDir, binOutDir, { recursive: true });
 
       // Copy Prisma schema and migrations to the output directory
       const prismaInDir = path.join(__dirname, "prisma");
-      const prismaOutDir = path.join(nitro.options.output.dir, "prisma");
-      await fs.cp(prismaInDir, prismaOutDir, { recursive: true });
+      const prismaOutDir = path.join(dir, "prisma");
+      const prismaFiles = await fs.readdir(prismaInDir);
+      for (const file of prismaFiles) {
+        if (/^(schema.prisma|migrations)$/.test(file)) {
+          await fs.cp(path.join(prismaInDir, file), path.join(prismaOutDir, file), { recursive: true });
+        }
+      }
 
-      // Copy Prisma client to the output directory
+      // Copy Prisma query compiler to the output directory
       const prismaClientPkgUrl = import.meta.resolve("@prisma/client/package.json");
-      const prismaClientInDir = path.join(url.fileURLToPath(prismaClientPkgUrl), "..");
-      const prismaClientOutDir = path.join(nitro.options.output.serverDir, "node_modules", "@prisma", "client");
-      await fs.cp(prismaClientInDir, prismaClientOutDir, { recursive: true });
+      const prismaClientRuntimeInDir = path.join(url.fileURLToPath(prismaClientPkgUrl), "..", "runtime");
+      const prismaClientRuntimeOutDir = path.join(serverDir, "node_modules", "@prisma", "client", "runtime");
+      const prismaClientRuntimeFiles = await fs.readdir(prismaClientRuntimeInDir);
+      for (const file of prismaClientRuntimeFiles) {
+        if (/^query_compiler_bg.postgresql.wasm$/.test(file)) {
+          await fs.cp(path.join(prismaClientRuntimeInDir, file), path.join(prismaClientRuntimeOutDir, file));
+        }
+      }
 
-      // Copy Prisma engines to the output directory
+      // Copy Prisma schema engine to the output directory
       const prismaEnginesPkgUrl = import.meta.resolve("@prisma/engines/package.json");
       const prismaEnginesInDir = path.join(url.fileURLToPath(prismaEnginesPkgUrl), "..");
-      const prismaEnginesOutDir = path.join(nitro.options.output.serverDir, "node_modules", "@prisma", "engines");
-      await fs.cp(prismaEnginesInDir, prismaEnginesOutDir, { recursive: true });
+      const prismaEnginesOutDir = path.join(serverDir, "node_modules", "@prisma", "engines");
+      const prismaEnginesFiles = await fs.readdir(prismaEnginesInDir);
+      for (const file of prismaEnginesFiles) {
+        if (/^schema-engine-.+$/.test(file)) {
+          await fs.cp(path.join(prismaEnginesInDir, file), path.join(prismaEnginesOutDir, file));
+        }
+      }
     },
   },
   i18n: {
