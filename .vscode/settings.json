@@ -1,5 +1,10 @@
 {
   "files.associations": {
+    ".gitignore": "ignore",
+    ".dockerignore": "ignore",
+    ".prettierignore": "ignore",
+    ".env": "properties",
+    ".env.*": "properties",
     "*.css": "tailwindcss"
   },
   "editor.quickSuggestions": {

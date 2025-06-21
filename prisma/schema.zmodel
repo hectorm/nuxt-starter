@@ -1,8 +1,7 @@
 generator client {
-    provider = "prisma-client-js"
-    // provider     = "prisma-client-ts"
-    // output       = "../.prisma/"
-    // moduleFormat = "esm"
+    provider     = "prisma-client"
+    output       = "./generated/prisma/"
+    moduleFormat = "esm"
     previewFeatures = ["relationJoins", "queryCompiler", "driverAdapters"]
 }
 

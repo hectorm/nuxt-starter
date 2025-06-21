@@ -1,11 +1,17 @@
+# Node dependencies
 node_modules/
 
+# Nuxt dev/build outputs
 /.cache/
 /.data/
 /.nitro/
 /.nuxt/
 /.output/
-/dist
+/dist/
 
+# Prisma client
+/prisma/generated/
+
+# Lock files
 package-lock.json
 pnpm-lock.yaml

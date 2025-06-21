@@ -102,6 +102,13 @@ export default defineNuxtConfig({
   build: {
     transpile: ["trpc-nuxt"],
   },
+  vite: {
+    build: {
+      rollupOptions: {
+        external: ["jsdom"],
+      },
+    },
+  },
   hooks: {
     "nitro:build:public-assets": async (nitro) => {
       // Copy bin directory to the output directory
@@ -116,8 +123,8 @@ export default defineNuxtConfig({
 
       // Copy Prisma client to the output directory
       const prismaClientPkgUrl = import.meta.resolve("@prisma/client/package.json");
-      const prismaClientInDir = path.join(url.fileURLToPath(prismaClientPkgUrl), "..", "..", "..", ".prisma", "client");
-      const prismaClientOutDir = path.join(nitro.options.output.serverDir, "node_modules", ".prisma", "client");
+      const prismaClientInDir = path.join(url.fileURLToPath(prismaClientPkgUrl), "..");
+      const prismaClientOutDir = path.join(nitro.options.output.serverDir, "node_modules", "@prisma", "client");
       await fs.cp(prismaClientInDir, prismaClientOutDir, { recursive: true });
 
       // Copy Prisma engines to the output directory

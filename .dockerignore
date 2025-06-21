@@ -1,23 +1,31 @@
+# Node dependencies
 node_modules/
 
+# Nuxt dev/build outputs
 /.cache/
 /.data/
 /.nitro/
 /.nuxt/
 /.output/
-/.prisma/
 /dist/
 
+# Prisma client
+/prisma/generated/
+
+# Local env files
 .env
 .env.*
 !.env.sample
 
+# Docker files
 Dockerfile
 Dockerfile.*
 compose.yaml
 compose.*.yaml
 
+# CI/CD files
 .github/
 .gitlab-ci.yml
 
+# VCS
 .git/
