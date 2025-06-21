@@ -10,6 +10,7 @@ ENV NITRO_PRESET=bun
 ENV PRISMA_DATABASE_URL=postgresql://localhost:5432/app
 ENV PRISMA_SHADOW_DATABASE_URL=postgresql://localhost:5432/app_shadow
 
+RUN apt-get update && apt-get install -y libssl3
 RUN bun install -g node-gyp
 
 WORKDIR /src/
