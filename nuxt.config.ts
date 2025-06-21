@@ -100,6 +100,13 @@ export default defineNuxtConfig({
   build: {
     transpile: ["trpc-nuxt"],
   },
+  vite: {
+    build: {
+      rollupOptions: {
+        external: ["jsdom"],
+      },
+    },
+  },
   hooks: {
     "nitro:build:public-assets": async (nitro) => {
       // Copy bin directory to the output directory
