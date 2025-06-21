@@ -2,7 +2,7 @@
 ## "build" stage
 ##################################################
 
-FROM docker.io/node:22.16.0-bookworm@sha256:0b5b940c21ab03353de9042f9166c75bcfc53c4cd0508c7fd88576646adbf875 AS build
+FROM docker.io/node:22.16.0-bookworm@sha256:71bcbb3b215b3fa84b5b167585675072f4c270855e37a599803f1a58141a0716 AS build
 
 ENV PNPM_HOME=/pnpm
 ENV PATH=${PNPM_HOME}:${PATH}
@@ -30,7 +30,7 @@ RUN --network=none --mount=type=cache,id=pnpm,dst=/pnpm/store/ \
 ## "main" stage
 ##################################################
 
-FROM gcr.io/distroless/cc-debian12:nonroot@sha256:20111f02d53c645d42d68fc2be1c82f471f3b6377063fada1643ef06182214b9 AS main
+FROM gcr.io/distroless/cc-debian12:nonroot@sha256:a3c413a866ff27d0ae9e8555fd7c29991799aba085d1d7eb3348acac171a1752 AS main
 
 COPY --from=build --chown=0:0 /usr/local/bin/node /node
 COPY --from=build --chown=0:0 /src/.output/ /app/
