@@ -1,7 +1,6 @@
 import { Buffer } from "node:buffer";
 
-import type { PrismaClient } from "~~/prisma/generated/prisma/client";
-import { Prisma } from "~~/prisma/generated/prisma/client";
+import type { Prisma, PrismaClient } from "~~/prisma/generated/prisma/client";
 
 export interface LuciaOptions {
   cookieName: string;
@@ -29,28 +28,28 @@ export class Lucia {
   public cookieName: string;
   public maxAge: number;
 
-  public permissionSelect = Prisma.validator<Prisma.RoleSelect>()({
+  public permissionSelect = {
     id: true,
     name: true,
-  });
+  } satisfies Prisma.PermissionSelect;
 
-  public roleSelect = Prisma.validator<Prisma.RoleSelect>()({
+  public roleSelect = {
     id: true,
     name: true,
     permissions: {
       select: { permission: { select: this.permissionSelect } },
     },
-  });
+  } satisfies Prisma.RoleSelect;
 
-  public groupSelect = Prisma.validator<Prisma.GroupSelect>()({
+  public groupSelect = {
     id: true,
     name: true,
     roles: {
       select: { role: { select: this.roleSelect } },
     },
-  });
+  } satisfies Prisma.GroupSelect;
 
-  public userSelect = Prisma.validator<Prisma.UserSelect>()({
+  public userSelect = {
     id: true,
     username: true,
     fullname: true,
@@ -61,9 +60,9 @@ export class Lucia {
     groups: {
       select: { group: { select: this.groupSelect } },
     },
-  });
+  } satisfies Prisma.UserSelect;
 
-  public sessionSelect = Prisma.validator<Prisma.SessionSelect>()({
+  public sessionSelect = {
     id: true,
     token: true,
     sid: true,
@@ -72,7 +71,7 @@ export class Lucia {
     user: {
       select: this.userSelect,
     },
-  });
+  } satisfies Prisma.SessionSelect;
 
   constructor(prisma: PrismaClient, options: LuciaOptions) {
     this.prisma = prisma;

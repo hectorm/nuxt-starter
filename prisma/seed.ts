@@ -1,5 +1,6 @@
 #!/usr/bin/env tsx
 import type { Logger } from "pino";
+import { PrismaPg } from "@prisma/adapter-pg";
 import pino from "pino";
 
 import { Permissions } from "~/domain/permissions";
@@ -121,7 +122,9 @@ async function createSampleData(prisma: PrismaClient) {
 
 if (isCLI) {
   logger.info("Seeding database...");
+  const adapter = new PrismaPg({ connectionString: env.PRISMA_DATABASE_URL });
   const prisma = new PrismaClient({
+    adapter,
     transactionOptions: {
       isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
     },
