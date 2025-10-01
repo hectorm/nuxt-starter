@@ -11,8 +11,8 @@ import { definePageMeta, useOverlay, useToast } from "#imports";
 import type { DropdownMenuItem, TableColumn } from "@nuxt/ui";
 import UBadge from "@nuxt/ui/runtime/components/Badge.vue";
 import UButton from "@nuxt/ui/runtime/components/Button.vue";
-import UButtonGroup from "@nuxt/ui/runtime/components/ButtonGroup.vue";
 import UDropdownMenu from "@nuxt/ui/runtime/components/DropdownMenu.vue";
+import UFieldGroup from "@nuxt/ui/runtime/components/FieldGroup.vue";
 import UInput from "@nuxt/ui/runtime/components/Input.vue";
 import UPopover from "@nuxt/ui/runtime/components/Popover.vue";
 import USelectMenu from "@nuxt/ui/runtime/components/SelectMenu.vue";
@@ -249,7 +249,7 @@ definePageMeta({
   >
     <template v-for="{ id } in columns" #[`${id}-header`]="{ column }" :key="id">
       <template v-if="id === 'action'">&nbsp;</template>
-      <UButtonGroup v-else :aria-label="$t(`pages.settings.users.table.${id}`)" class="-mx-2.5 flex w-full flex-row">
+      <UFieldGroup v-else :aria-label="$t(`pages.settings.users.table.${id}`)" class="-mx-2.5 flex w-full flex-row">
         <UButton
           v-if="(column.columnDef.meta as any).sortable"
           :label="$t(`pages.settings.users.table.${id}`)"
@@ -323,7 +323,7 @@ definePageMeta({
             </template>
           </template>
         </UPopover>
-      </UButtonGroup>
+      </UFieldGroup>
     </template>
     <template v-for="{ id } in columns" #[`${id}-cell`]="{ column, row, cell }" :key="id">
       <template v-if="id === 'action'">

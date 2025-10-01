@@ -10,10 +10,14 @@ datasource db {
 }
 
 generator client {
-  provider        = "prisma-client"
-  output          = "./generated/prisma/"
-  moduleFormat    = "esm"
-  previewFeatures = ["relationJoins", "queryCompiler", "driverAdapters"]
+  provider               = "prisma-client"
+  output                 = "./generated/prisma/"
+  engineType             = "client"
+  runtime                = "nodejs"
+  moduleFormat           = "esm"
+  generatedFileExtension = "ts"
+  importFileExtension    = "ts"
+  previewFeatures        = ["relationJoins"]
 }
 
 model User {

@@ -1,6 +1,7 @@
 import { appendHeader, createError, defineEventHandler, getCookie, getRequestURL, sendRedirect } from "h3";
 
 import type { Prisma } from "~~/prisma/generated/prisma/client";
+import type { OIDCUserProfile } from "~~/server/utils/oidc";
 import { logger } from "~~/server/utils/logger";
 import { prisma } from "~~/server/utils/prisma";
 
@@ -36,7 +37,7 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  let profile;
+  let profile: OIDCUserProfile | null;
   try {
     profile = await oidc.getUserProfile(tokens.idTokenClaims, tokens.accessToken);
   } catch (error) {

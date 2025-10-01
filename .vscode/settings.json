@@ -5,7 +5,8 @@
     ".prettierignore": "ignore",
     ".env": "properties",
     ".env.*": "properties",
-    "*.css": "tailwindcss"
+    "*.css": "tailwindcss",
+    "*.zmodel": "zmodel"
   },
   "editor.quickSuggestions": {
     "strings": "on"

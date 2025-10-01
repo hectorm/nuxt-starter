@@ -1,31 +1,26 @@
 <script setup lang="ts">
 import Blockquote from "@tiptap/extension-blockquote";
 import Bold from "@tiptap/extension-bold";
-import BulletList from "@tiptap/extension-bullet-list";
 import Code from "@tiptap/extension-code";
 import CodeBlock from "@tiptap/extension-code-block";
 import Document from "@tiptap/extension-document";
 import Heading from "@tiptap/extension-heading";
-import History from "@tiptap/extension-history";
 import HorizontalRule from "@tiptap/extension-horizontal-rule";
 import Italic from "@tiptap/extension-italic";
 import Link from "@tiptap/extension-link";
-import ListItem from "@tiptap/extension-list-item";
-import OrderedList from "@tiptap/extension-ordered-list";
+import { BulletList, ListItem, OrderedList } from "@tiptap/extension-list";
 import Paragraph from "@tiptap/extension-paragraph";
 import Strike from "@tiptap/extension-strike";
-import Table from "@tiptap/extension-table";
-import TableCell from "@tiptap/extension-table-cell";
-import TableHeader from "@tiptap/extension-table-header";
-import TableRow from "@tiptap/extension-table-row";
+import { Table, TableCell, TableHeader, TableRow } from "@tiptap/extension-table";
 import Text from "@tiptap/extension-text";
 import Underline from "@tiptap/extension-underline";
+import { UndoRedo } from "@tiptap/extensions";
 import { EditorContent, useEditor } from "@tiptap/vue-3";
 import { useDebounceFn } from "@vueuse/core";
 import { ref, watch } from "vue";
 
 import UButton from "@nuxt/ui/runtime/components/Button.vue";
-import UButtonGroup from "@nuxt/ui/runtime/components/ButtonGroup.vue";
+import UFieldGroup from "@nuxt/ui/runtime/components/FieldGroup.vue";
 import UInput from "@nuxt/ui/runtime/components/Input.vue";
 import UPopover from "@nuxt/ui/runtime/components/Popover.vue";
 
@@ -56,7 +51,6 @@ const editor = useEditor({
     CodeBlock,
     Document,
     Heading,
-    History,
     HorizontalRule,
     Italic,
     Link.configure({ openOnClick: false }),
@@ -70,6 +64,7 @@ const editor = useEditor({
     TableRow,
     Text,
     Underline,
+    UndoRedo,
   ],
   enableInputRules: false,
   enablePasteRules: false,
@@ -85,7 +80,9 @@ watch(
   useDebounceFn(async (value) => {
     if (value !== md.value) {
       md.value = value;
-      editor.value?.commands.setContent(await mdToHtml(md.value), false);
+      editor.value?.commands.setContent(await mdToHtml(md.value), {
+        emitUpdate: false,
+      });
     }
   }, props.refreshMs),
 );
@@ -136,18 +133,18 @@ const clearNodes = () => {
 
 <template>
   <div class="flex flex-col gap-2">
-    <UButtonGroup>
+    <UFieldGroup>
       <UPopover>
         <UButton color="neutral" variant="ghost" icon="i-lucide-heading" />
         <template #content>
-          <UButtonGroup>
+          <UFieldGroup>
             <UButton color="neutral" variant="ghost" icon="i-lucide-heading-1" @click="() => toggleHeading(1)" />
             <UButton color="neutral" variant="ghost" icon="i-lucide-heading-2" @click="() => toggleHeading(2)" />
             <UButton color="neutral" variant="ghost" icon="i-lucide-heading-3" @click="() => toggleHeading(3)" />
             <UButton color="neutral" variant="ghost" icon="i-lucide-heading-4" @click="() => toggleHeading(4)" />
             <UButton color="neutral" variant="ghost" icon="i-lucide-heading-5" @click="() => toggleHeading(5)" />
             <UButton color="neutral" variant="ghost" icon="i-lucide-heading-6" @click="() => toggleHeading(6)" />
-          </UButtonGroup>
+          </UFieldGroup>
         </template>
       </UPopover>
       <UButton color="neutral" variant="ghost" icon="i-lucide-bold" @click="() => toggleBold()" />
@@ -157,11 +154,11 @@ const clearNodes = () => {
       <UPopover @update:open="(open) => fillLinkInput(open)">
         <UButton color="neutral" variant="ghost" icon="i-lucide-link" />
         <template #content>
-          <UButtonGroup>
+          <UFieldGroup>
             <UInput v-model="activeLinkHref" @keypress.enter.prevent="() => setLink()" />
             <UButton color="neutral" variant="ghost" icon="i-lucide-link" @click="() => setLink()" />
             <UButton color="neutral" variant="ghost" icon="i-lucide-unlink" @click="() => unsetLink()" />
-          </UButtonGroup>
+          </UFieldGroup>
         </template>
       </UPopover>
       <UButton color="neutral" variant="ghost" icon="i-lucide-list-ordered" @click="() => toggleOrderedList()" />
@@ -170,7 +167,7 @@ const clearNodes = () => {
       <UButton color="neutral" variant="ghost" icon="i-lucide-terminal" @click="() => toggleCode()" />
       <UButton color="neutral" variant="ghost" icon="i-lucide-code" @click="() => toggleCodeBlock()" />
       <UButton color="neutral" variant="ghost" icon="i-lucide-remove-formatting" @click="() => clearNodes()" />
-    </UButtonGroup>
+    </UFieldGroup>
     <EditorContent class="markdown-body [&_.tiptap]:outline-0" :editor="editor" />
   </div>
 </template>

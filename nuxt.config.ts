@@ -19,10 +19,7 @@ export default defineNuxtConfig({
     "@pinia/nuxt",
     "@vueuse/nuxt",
   ],
-  compatibilityDate: "2025-04-29",
-  future: {
-    compatibilityVersion: 4,
-  },
+  compatibilityDate: "2025-10-01",
   experimental: {
     enforceModuleCompatibility: true,
   },
@@ -128,17 +125,6 @@ export default defineNuxtConfig({
         }
       }
 
-      // Copy Prisma query compiler to the output directory
-      const prismaClientPkgUrl = import.meta.resolve("@prisma/client/package.json");
-      const prismaClientRuntimeInDir = path.join(url.fileURLToPath(prismaClientPkgUrl), "..", "runtime");
-      const prismaClientRuntimeOutDir = path.join(serverDir, "node_modules", "@prisma", "client", "runtime");
-      const prismaClientRuntimeFiles = await fs.readdir(prismaClientRuntimeInDir);
-      for (const file of prismaClientRuntimeFiles) {
-        if (/^query_compiler_bg.postgresql.wasm$/.test(file)) {
-          await fs.cp(path.join(prismaClientRuntimeInDir, file), path.join(prismaClientRuntimeOutDir, file));
-        }
-      }
-
       // Copy Prisma schema engine to the output directory
       const prismaEnginesPkgUrl = import.meta.resolve("@prisma/engines/package.json");
       const prismaEnginesInDir = path.join(url.fileURLToPath(prismaEnginesPkgUrl), "..");
@@ -152,7 +138,6 @@ export default defineNuxtConfig({
     },
   },
   i18n: {
-    lazy: true,
     langDir: "locales",
     defaultLocale: "en",
     locales: [
@@ -177,9 +162,6 @@ export default defineNuxtConfig({
       cookieKey: "i18n_locale",
       alwaysRedirect: true,
       fallbackLocale: "en",
-    },
-    bundle: {
-      optimizeTranslationDirective: false,
     },
   },
   colorMode: {
